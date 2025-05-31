@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>تطبيق المشاركات والدردشة باللهجة السعودية</title>
+
+  <!-- Google Font (Tajawal) for Arabic -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!--
+    ----------------------------------------
+    ✎ إعداد متغيرات التحقق من المستخدمين (Config)
+    ----------------------------------------
+    افترض أنك تضع ملف .env في جذر المشروع يحتوي على:
+      VERIFIED_USERNAMES=alice,bob,charlie
+    وبواسطة بناء (build) أو سكربت صغير، تُحوّل هذا المتغير إلى مصفوفة JavaScript:
+      const VERIFIED_USERNAMES = ['alice','bob','charlie'];
+    في بيئات سيرفر حقيقي (مثل Node.js مع Express)، يمكنك حقن هذا المتغير في الصفحة عبر Template engine.
+    لكن هنا، نضعه كمثال ثابت. يجب عليك استبداله ديناميكيًا بقيمك من .env عند نشر الموقع.
+  -->
+  <script>
+    // مثال توضيحي: استبدل المحتوى أدناه في وقت النشر بقائمة المستخدمين الموثَّقين الموجودة في .env
+    // إذا كان لديك build tool، حوّل process.env.VERIFIED_USERNAMES إلى مصفوفة JavaScript.
+    const VERIFIED_USERNAMES = ['fhd', 'bob', 'charlie'];
+    // ↓ لا تعدل هذا الجزء إذا كنت ستحقن VERIFIED_USERNAMES تلقائيًا من السيرفر
+  </script>
+
+  <style>
+    /* ==============================
+     * * * NEW DESIGN VARIABLES * * *
+     * ============================== */
+    :root {
+        --primary: #5B8C85;        /* Soft Teal-Blue */
+        --accent: #E8A24D;         /* Warm Ochre */
+        --bg: #F8F9FA;             /* Off-White/Light Gray */
+        --card-bg: #FFFFFF;
+        --text: #343A40;           /* Dark Charcoal */
+        --text-main: #212529;
+        --text-secondary: #6C757D; /* Medium Gray */
+        --text-muted: #ADB5BD;     /* Lighter Gray */
+        --border-color: #E9ECEF;   /* Very light border */
+        --shadow-light: rgba(0,0,0,0.08);
+        --shadow-medium: rgba(0,0,0,0.15);
+        --shadow-deep: rgba(0,0,0,0.25);
+        --danger-color: #DC3545;
+        --danger-hover: #C82333;
+
+        --font-family: 'Tajawal', sans-serif;
+        --border-radius-lg: 16px;
+        --border-radius-md: 10px;
+        --border-radius-sm: 8px;
+    }
+    /* Dark Mode specific variables */
+    .dark-mode {
+        --primary: #76A5A0;
+        --accent: #F0B267;
+        --bg: #282C34;
+        --card-bg: #3A3F47;
+        --text: #F8F9FA;
+        --text-main: #E9ECEF;
+        --text-secondary: #CED4DA;
+        --text-muted: #95A5A6;
+        --border-color: #495057;
+        --shadow-light: rgba(0,0,0,0.3);
+        --shadow-medium: rgba(0,0,0,0.5);
+        --shadow-deep: rgba(0,0,0,0.7);
+        --danger-color: #EF5350;
+        --danger-hover: #D32F2F;
+    }
+
+    /* ==============================
+     * * * RESET & BASE STYLES * * *
+     * ============================== */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    html, body {
+        height: 100%;
+        font-family: var(--font-family);
+        background-color: var(--bg);
+        color: var(--text);
+        direction: rtl;
+        transition: background-color 0.4s ease, color 0.4s ease;
+        line-height: 1.6;
+    }
+    button, input, textarea {
+        font-family: inherit;
+        outline: none;
+        border: none;
+        background: none;
+        color: inherit;
+    }
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+    img {
+        display: block;
+        max-width: 100%;
+    }
+
+    /* Base styles for interactive elements */
+    button {
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    }
+    input, textarea {
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Accessibility: Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+    /* ==============================
+     * * * ANIMATIONS * * *
+     * ============================== */
+    @keyframes fadeInScale {
+        from { opacity: 0; transform: scale(0.98) translateY(10px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes fadeOutUp {
+        from { opacity: 1; transform: translateY(0); }
+        to   { opacity: 0; transform: translateY(-20px); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        80% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); }
+    }
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        15% { transform: scale(1.15); }
+        30% { transform: scale(1); }
+        45% { transform: scale(1.15); }
+    }
+    @keyframes rotateIcon {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* ==============================
+     * * * REGISTRATION SCREEN * * *
+     * ============================== */
+    #regPage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        background-color: var(--bg);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+        padding: 1rem;
+    }
+    #regForm {
+        background-color: var(--card-bg);
+        padding: 3rem 1.5rem;
+        border-radius: var(--border-radius-lg);
+        box-shadow: 0 10px 30px var(--shadow-medium), 0 4px 12px var(--shadow-light);
+        text-align: center;
+        width: 100%;
+        max-width: 450px;
+        animation: fadeInScale 0.7s ease-out;
+    }
+    #regForm h2 {
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        color: var(--text-main);
+        font-weight: 700;
+    }
+    .reg-input {
+        width: 100%;
+        padding: 1rem 1.2rem;
+        font-size: 1.15rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        background-color: var(--bg);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        margin-bottom: 1.2rem;
+        color: var(--text-main);
+        text-align: right;
+    }
+    .reg-input::placeholder {
+        color: var(--text-secondary);
+    }
+    .reg-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(91, 140, 133, 0.25), inset 0 1px 3px rgba(0,0,0,0.08);
+    }
+    #regForm button {
+        display: inline-block;
+        margin-top: 1.5rem;
+        background-color: var(--primary);
+        color: #fff;
+        padding: 1rem 2.5rem;
+        font-size: 1.15rem;
+        border-radius: var(--border-radius-md);
+        box-shadow: 0 6px 15px var(--shadow-medium);
+        font-weight: 700;
+        transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+    }
+    #regForm button:hover {
+        background-color: #4A706A;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px var(--shadow-deep);
+    }
+    #regForm button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px var(--shadow-light);
+    }
+
+    /* ==============================
+     * * * USERNAME EXPIRATION BANNER * * *
+     * ============================== */
+    #usernameWarning {
+        background-color: #FFF3CD;
+        color: #856404;
+        border: 1px solid #FFEEBA;
+        padding: 0.8rem 1rem;
+        text-align: center;
+        font-size: 0.95rem;
+        display: none;
+    }
+
+    /* ==============================
+     * * * MAIN PAGE * * *
+     * ============================== */
+    #mainPage {
+        display: none;
+        flex-direction: column;
+        height: 100%;
+        transition: opacity 0.5s ease;
+    }
+    header {
+        background-color: var(--primary);
+        color: #fff;
+        padding: 1.5rem 1.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 20px var(--shadow-medium);
+        z-index: 10;
+        position: sticky;
+        top: 0;
+    }
+    header .header-userinfo {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    header .header-userinfo img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        background-color: var(--text-muted);
+        border: 2px solid #fff;
+    }
+    header .header-userinfo .display-name {
+        font-size: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    header .header-userinfo .username {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+    header .header-buttons {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    #toggleThemeBtn,
+    #addPostBtn,
+    #profileBtn {
+        cursor: pointer;
+        position: relative;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: rgba(255,255,255,0.18);
+        transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    #toggleThemeBtn:hover,
+    #addPostBtn:hover,
+    #profileBtn:hover {
+        transform: scale(1.1);
+        background-color: rgba(255,255,255,0.3);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    #toggleThemeBtn:active,
+    #addPostBtn:active,
+    #profileBtn:active {
+        transform: scale(0.95);
+        box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    }
+    #toggleThemeBtn i,
+    #addPostBtn i,
+    #profileBtn i {
+        font-size: 2rem;
+        color: #fff;
+        transition: transform 0.3s ease;
+    }
+    #profileBtn img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        display: none;
+        border: 2px solid rgba(255,255,255,0.5);
+    }
+
+    /* ==============================
+     * * * FEED AREA * * *
+     * ============================== */
+    #feed {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        scroll-behavior: smooth;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .no-posts {
+        text-align: center;
+        color: var(--text-muted);
+        margin-top: 5rem;
+        font-size: 1.3rem;
+        animation: fadeInUp 0.6s ease;
+    }
+    .post {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 25px var(--shadow-medium), 0 3px 10px var(--shadow-light);
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+        width: 100%;
+        max-width: 700px;
+        border: 1px solid var(--border-color);
+    }
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        margin-bottom: 1.2rem;
+    }
+    .post-header img.post-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        object-fit: cover;
+        background-color: var(--text-muted);
+        border: 3px solid var(--primary);
+    }
+    .post-header .display-name {
+        font-weight: 700;
+        color: var(--text-main);
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .post-header .username {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    .post-header .post-time {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-top: 4px;
+    }
+    .post .post-text {
+        margin-bottom: 1.5rem;
+        line-height: 1.8;
+        font-size: 1.1rem;
+        color: var(--text-main);
+        white-space: pre-wrap;
+    }
+    .post img.post-image {
+        max-width: 100%;
+        border-radius: var(--border-radius-md);
+        cursor: zoom-in;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+    }
+    .post img.post-image:hover {
+        transform: scale(1.01);
+        box-shadow: 0 6px 20px var(--shadow-medium);
+    }
+    .post .actions {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+    }
+    .post .actions .action-btn {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: color 0.2s ease, transform 0.2s ease;
+        font-weight: 500;
+    }
+    .post .actions .action-btn:hover {
+        color: var(--accent);
+        transform: translateY(-3px);
+    }
+    .post .actions .action-btn:active {
+        transform: translateY(0);
+    }
+    .post .actions .action-btn i {
+        font-size: 1.8rem;
+        margin-left: 0.7rem;
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .post .actions .action-btn.liked i {
+        animation: heartbeat 0.5s ease-out;
+    }
+    .post .actions .likes-count,
+    .post .actions .comments-count {
+        font-size: 1rem;
+        margin-left: 0.3rem;
+        font-weight: 700;
+    }
+    .post .actions .liked {
+        color: var(--accent) !important;
+    }
+    .post .actions .delete-post-btn {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        color: var(--danger-color);
+        transition: color 0.2s ease, transform 0.2s ease;
+        font-size: 1.1rem;
+    }
+    .post .actions .delete-post-btn:hover {
+        transform: scale(1.1) rotate(5deg);
+        color: var(--danger-hover);
+    }
+    .post .actions .delete-post-btn:active {
+        transform: scale(0.95);
+    }
+    .post .post-footer {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        text-align: left;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ==============================
+     * * * COMMENTS SECTION * * *
+     * ============================== */
+    .post .comment-section {
+        border-top: 1px solid var(--border-color);
+        padding-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+    }
+    .post .comment-section.show-comments {
+        max-height: 800px;
+        opacity: 1;
+    }
+    .post .comment-input-container {
+        display: flex;
+        gap: 0.9rem;
+    }
+    .post .comment-input-container input {
+        flex: 1;
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        background-color: var(--bg);
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        color: var(--text-main);
+    }
+    .post .comment-input-container input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(91, 140, 133, 0.15), inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .post .comment-input-container button {
+        background-color: var(--accent);
+        color: #fff;
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+        border-radius: var(--border-radius-sm);
+        box-shadow: 0 2px 8px var(--shadow-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .post .comment-input-container button i {
+        font-size: 1.3rem;
+    }
+    .post .comment-input-container button:hover {
+        background-color: #D28F40;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px var(--shadow-medium);
+    }
+    .post .comment-input-container button:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 3px var(--shadow-light);
+    }
+    .post .comments-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .post .comment {
+        background-color: var(--bg);
+        border-radius: var(--border-radius-md);
+        padding: 1rem;
+        box-shadow: 0 1px 8px var(--shadow-light);
+        position: relative;
+        animation: fadeInUp 0.4s ease forwards;
+        border: 1px solid var(--border-color);
+    }
+    .post .comment .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 0.7rem;
+    }
+    .post .comment .comment-header img.comment-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        background-color: var(--text-muted);
+        border: 2px solid var(--primary);
+    }
+    .post .comment .comment-header .comment-user {
+        font-weight: 700;
+        color: var(--text-main);
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .post .comment .comment-header .comment-username {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 1px;
+    }
+    .post .comment .comment-header .comment-time {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 1px;
+    }
+    .post .comment .comment-text {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 0.7rem;
+        color: var(--text-main);
+        white-space: pre-wrap;
+    }
+    .post .comment .comment-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: color 0.2s;
+        font-weight: 500;
+    }
+    .post .comment .comment-actions:hover {
+        color: var(--accent);
+    }
+    .post .comment .comment-actions.liked-comment i {
+        animation: heartbeat 0.5s ease-out;
+    }
+    .post .comment .comment-actions i {
+        font-size: 1.3rem;
+        margin-left: 0.3rem;
+    }
+    .post .comment .liked-comment {
+        color: var(--accent) !important;
+    }
+    .post .comment .delete-comment-btn {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        cursor: pointer;
+        color: var(--danger-color);
+        transition: color 0.2s, transform 0.2s;
+        font-size: 1.1rem;
+    }
+    .post .comment .delete-comment-btn:hover {
+        transform: scale(1.1) rotate(-5deg);
+        color: var(--danger-hover);
+    }
+
+    /* ==============================
+     * * * MODAL STYLES * * *
+     * ============================== */
+    .modal {
+        position: fixed;
+        top: 0; right: 0; bottom: 0; left: 0;
+        background-color: rgba(0,0,0,0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 1000;
+    }
+    .modal.show {
+        visibility: visible;
+        opacity: 1;
+    }
+    .modal-content {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        padding: 2.5rem;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90%;
+        overflow-y: auto;
+        opacity: 0;
+        transform: translateY(-40px) scale(0.9);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        box-shadow: 0 12px 40px var(--shadow-deep), 0 6px 15px var(--shadow-medium);
+        border: 1px solid var(--border-color);
+    }
+    .modal.show .modal-content {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    /* ==============================
+     * * * PROFILE EDIT MODAL * * *
+     * ============================== */
+    #profileModalContent h2 {
+        margin-bottom: 1.8rem;
+        font-size: 1.6rem;
+        color: var(--text-main);
+        text-align: center;
+        font-weight: 700;
+    }
+    .profile-input {
+        width: 100%;
+        padding: 1rem 1.2rem;
+        font-size: 1.1rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        background-color: var(--bg);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+        color: var(--text-main);
+        text-align: right;
+    }
+    .profile-input::placeholder {
+        color: var(--text-secondary);
+    }
+    .profile-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(91, 140, 133, 0.25), inset 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .avatar-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        cursor: pointer;
+        margin-bottom: 1.5rem;
+        color: var(--text-secondary);
+        transition: color 0.3s ease;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    .avatar-label i {
+        font-size: 3.5rem;
+        color: var(--primary);
+        margin-bottom: 0.8rem;
+        transition: transform 0.2s ease, color 0.3s ease;
+    }
+    .avatar-label:hover i {
+        color: #4A706A;
+        transform: scale(1.15);
+    }
+    #profileAvatar {
+        display: none;
+    }
+    #avatarPreview {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: none;
+        margin: 0 auto 1.5rem auto;
+        box-shadow: 0 6px 20px var(--shadow-medium), 0 2px 8px var(--shadow-light);
+        border: 4px solid var(--primary);
+    }
+
+    /* ==============================
+     * * * CREATE POST MODAL * * *
+     * ============================== */
+    #postModalContent h2 {
+        margin-bottom: 1.8rem;
+        font-size: 1.6rem;
+        color: var(--text-main);
+        text-align: center;
+        font-weight: 700;
+    }
+    #postText {
+        width: 100%;
+        height: 150px;
+        padding: 1rem;
+        font-size: 1.1rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        resize: vertical;
+        background-color: var(--bg);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+        color: var(--text-main);
+    }
+    #postText:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(91, 140, 133, 0.25), inset 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .file-label {
+        display: flex;
+        align-items: center;
+        font-size: 1.1rem;
+        color: var(--text-main);
+        margin-bottom: 1.2rem;
+        cursor: pointer;
+        transition: color 0.3s ease;
+        font-weight: 500;
+    }
+    .file-label i {
+        font-size: 1.8rem;
+        margin-left: 0.8rem;
+        color: var(--primary);
+        transition: transform 0.2s ease, color 0.3s ease;
+    }
+    .file-label:hover {
+        color: #4A706A;
+    }
+    .file-label:hover i {
+        transform: scale(1.15);
+    }
+    #postImage {
+        display: none;
+    }
+    #imagePreview {
+        max-width: 100%;
+        max-height: 300px;
+        margin-bottom: 1.8rem;
+        border-radius: var(--border-radius-md);
+        display: none;
+        box-shadow: 0 4px 15px var(--shadow-medium), 0 1px 5px var(--shadow-light);
+        object-fit: contain;
+        border: 1px solid var(--border-color);
+    }
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        gap: 1.2rem;
+    }
+    .modal-actions button {
+        padding: 0.8rem 1.8rem;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: var(--border-radius-md);
+        box-shadow: 0 2px 8px var(--shadow-light);
+        font-weight: 600;
+    }
+    .close-btn {
+        background-color: var(--danger-color);
+        color: #fff;
+    }
+    .close-btn:hover {
+        background-color: var(--danger-hover);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px var(--shadow-medium);
+    }
+    .close-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 3px var(--shadow-light);
+    }
+    .submit-btn {
+        background-color: var(--accent);
+        color: #fff;
+    }
+    .submit-btn:hover {
+        background-color: #D28F40;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px var(--shadow-medium);
+    }
+    .submit-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 3px var(--shadow-light);
+    }
+
+    /* ==============================
+     * * * IMAGE LIGHTBOX MODAL * * *
+     * ============================== */
+    #imageModalContent {
+        position: relative;
+        max-width: 95%;
+        max-height: 95%;
+        background: transparent;
+        padding: 0;
+        box-shadow: none;
+    }
+    #modalImage {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: var(--border-radius-md);
+        display: block;
+        object-fit: contain;
+        box-shadow: 0 10px 30px var(--shadow-deep);
+    }
+    .close-image-btn {
+        position: absolute;
+        top: -25px;
+        left: -25px;
+        background-color: var(--card-bg);
+        border: none;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 4px 15px var(--shadow-medium);
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        color: var(--text-main);
+        z-index: 10; /* Ensure it's above the image */
+    }
+    .close-image-btn:hover {
+        background-color: var(--bg);
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 6px 20px var(--shadow-deep);
+    }
+    .close-image-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* ==============================
+     * * * RESPONSIVE DESIGN * * *
+     * ============================== */
+    @media (max-width: 768px) {
+        header {
+            padding: 1.2rem 1.5rem;
+        }
+        header .header-userinfo .display-name {
+            font-size: 1rem;
+        }
+        header .header-userinfo .username {
+            font-size: 0.8rem;
+        }
+        header .header-buttons {
+            gap: 1rem;
+        }
+        #feed {
+            padding: 1.5rem;
+        }
+        .post {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: var(--border-radius-md);
+        }
+        .post-header img.post-avatar {
+            width: 50px;
+            height: 50px;
+        }
+        .post .actions {
+            gap: 1.5rem;
+        }
+        .post .actions .action-btn i {
+            font-size: 1.6rem;
+            margin-left: 0.5rem;
+        }
+
+        #profileModalContent h2, #postModalContent h2 {
+            font-size: 1.5rem;
+        }
+        .profile-input {
+            padding: 0.9rem 1rem;
+            font-size: 1rem;
+        }
+        .avatar-label i, .file-label i {
+            font-size: 3rem;
+        }
+        .modal-actions button {
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+        }
+        #avatarPreview {
+            width: 130px;
+            height: 130px;
+        }
+        #imagePreview {
+            max-height: 260px;
+        }
+        .close-image-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 1.8rem;
+            top: -18px;
+            left: -18px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        header .header-userinfo .display-name {
+            font-size: 0.95rem;
+        }
+        header .header-userinfo .username {
+            font-size: 0.75rem;
+        }
+        header .header-buttons {
+            gap: 0.8rem;
+        }
+        #toggleThemeBtn, #addPostBtn, #profileBtn {
+            width: 44px;
+            height: 44px;
+        }
+        #toggleThemeBtn i, #addPostBtn i, #profileBtn i {
+            font-size: 1.6rem;
+        }
+        .post-header .display-name {
+            font-size: 1.1rem;
+        }
+        .post-header .username {
+            font-size: 0.8rem;
+        }
+        .post .actions {
+            gap: 1rem;
+            font-size: 1rem;
+        }
+        .post .actions .action-btn i {
+            font-size: 1.6rem;
+            margin-left: 0.5rem;
+        }
+        .post .comment .comment-header .comment-user {
+            font-size: 0.9rem;
+        }
+        #regForm {
+            padding: 2rem 1.5rem;
+        }
+        #regForm h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .reg-input {
+            padding: 0.9rem 1rem;
+            font-size: 1.05rem;
+        }
+        #regForm button {
+            padding: 0.9rem 2rem;
+            font-size: 1.05rem;
+        }
+        .modal-content {
+            padding: 1.5rem;
+        }
+        #profileModalContent h2, #postModalContent h2 {
+            font-size: 1.4rem;
+        }
+        .avatar-label i {
+            font-size: 3rem;
+        }
+        #postText {
+            height: 120px;
+            font-size: 1rem;
+        }
+        .file-label {
+            font-size: 1rem;
+        }
+        .file-label i {
+            font-size: 1.6rem;
+        }
+        .modal-actions {
+            flex-direction: column-reverse;
+            gap: 1rem;
+        }
+        .modal-actions button {
+            width: 100%;
+        }
+        .close-image-btn {
+            width: 38px;
+            height: 38px;
+            font-size: 1.6rem;
+            top: -15px;
+            left: -15px;
+        }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ==============================
+       شاشة التسجيل (Username + DisplayName)
+       ============================== -->
+  <div id="regPage">
+    <form id="regForm">
+      <h2>حط اسم لعرضك واسم مستخدم فريد</h2>
+      <input
+        type="text"
+        id="displayNameInput"
+        class="reg-input"
+        placeholder="اسم العرض (مثلاً: محمد)"
+        required
+      />
+      <input
+        type="text"
+        id="usernameInput"
+        class="reg-input"
+        placeholder="اسم المستخدم الفريد (مثلاً: mohammed123)"
+        required
+      />
+      <small style="display:block; color: var(--text-secondary); margin-bottom: 1rem;">
+        :اسم المستخدم لازم يكون 3 حروف أو أكثر، مكون من حروف وأرقام فقط. مثال <code>ali1</code>
+      </small>
+      <button type="submit">سجل</button>
+    </form>
+  </div>
+
+  <!-- ==============================
+       الصفحة الرئيسية بعد التسجيل
+       ============================== -->
+  <div id="mainPage">
+    <header>
+      <div class="header-userinfo">
+        <img id="headerAvatar" alt="avatar" />
+        <div>
+          <div class="display-name" id="displayNameHeader">
+            ضيف
+            <i class="material-icons" id="verifyIcon" style="display:none; color:#1DA1F2; font-size:1.2rem;" title="موثق">verified</i>
+          </div>
+          <div class="username" id="usernameHeader">@user</div>
+        </div>
+      </div>
+      <div class="header-buttons">
+        <!-- زر تبديل الوضع الداكن -->
+        <button id="toggleThemeBtn" title="تبديل الوضع الداكن">
+          <i class="material-icons">brightness_6</i>
+        </button>
+        <!-- زر إنشاء بوست -->
+        <button id="addPostBtn" title="سوي مشاركة">
+          <i class="material-icons">add_circle</i>
+        </button>
+        <!-- زر الملف الشخصي -->
+        <button id="profileBtn" title="تعديل الملف الشخصي">
+          <i class="material-icons" id="profileIcon">account_circle</i>
+        </button>
+      </div>
+    </header>
+
+    <!-- حقل التحذير من انتهاء صلاحية اسم المستخدم -->
+    <div id="usernameWarning"></div>
+
+    <div id="feed">
+      <p class="no-posts">ما فيه أي بوستات حتى الآن. كن أول من ينشر!</p>
+    </div>
+  </div>
+
+  <!-- ==============================
+       نافذة تعديل الملف الشخصي
+       ============================== -->
+  <div id="profileModal" class="modal">
+    <div id="profileModalContent" class="modal-content">
+      <h2>تعديل الملف الشخصي</h2>
+      <input
+        type="text"
+        id="profileDisplayName"
+        class="profile-input"
+        placeholder="اسم العرض"
+        required
+      />
+      <input
+        type="text"
+        id="profileUsername"
+        class="profile-input"
+        placeholder="اسم المستخدم"
+        required
+      />
+      <small style="display:block; color: var(--text-secondary); margin-bottom: 1rem;">
+        :اسم المستخدم لازم يكون 3 حروف أو أكثر، حروف وأرقام فقط. مثال <code>ali1</code>
+      </small>
+      <label for="profileAvatar" class="avatar-label">
+        <i class="material-icons">camera_alt</i>
+        <span>اضغط عشان تغيّر صورة الأفتار</span>
+      </label>
+      <input
+        type="file"
+        id="profileAvatar"
+        accept="image/*"
+      />
+      <img id="avatarPreview" alt="معاينة الأفتار" />
+      <div class="modal-actions">
+        <button type="button" class="close-btn">
+          <i class="material-icons">close</i>
+        </button>
+        <button type="button" class="submit-btn" id="saveProfileBtn">
+          حفظ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================
+       نافذة إنشاء بوست
+       ============================== -->
+  <div id="postModal" class="modal">
+    <div id="postModalContent" class="modal-content">
+      <h2>سوي مشاركة</h2>
+      <textarea
+        id="postText"
+        placeholder="اكتب كلامك هنا..."
+      ></textarea>
+      <label for="postImage" class="file-label">
+        <i class="material-icons">image</i>
+        <span>أرفق صورة (اختياري)</span>
+      </label>
+      <input
+        type="file"
+        id="postImage"
+        accept="image/*"
+      />
+      <img id="imagePreview" alt="معاينة الصورة" />
+      <div class="modal-actions">
+        <button type="button" class="close-btn">
+          <i class="material-icons">close</i>
+        </button>
+        <button type="button" class="submit-btn">
+          نشر
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================
+       نافذة عرض الصورة (Lightbox)
+       ============================== -->
+  <div id="imageModal" class="modal">
+    <div id="imageModalContent" class="modal-content">
+      <button type="button" class="close-image-btn">
+        <i class="material-icons">close</i>
+      </button>
+      <img id="modalImage" src="" alt="عرض كامل للصورة" />
+    </div>
+  </div>
+
+  <script>
+    /* ===========================================================
+       المراجع للعناصر (DOM References)
+       =========================================================== */
+    const regPage             = document.getElementById('regPage');
+    const regForm             = document.getElementById('regForm');
+    const displayNameInput    = document.getElementById('displayNameInput');
+    const usernameInput       = document.getElementById('usernameInput');
+
+    const mainPage            = document.getElementById('mainPage');
+    const addPostBtn          = document.getElementById('addPostBtn');
+    const profileBtn          = document.getElementById('profileBtn');
+    const toggleThemeBtn      = document.getElementById('toggleThemeBtn');
+    const headerAvatar        = document.getElementById('headerAvatar');
+    const displayNameHeader   = document.getElementById('displayNameHeader');
+    const usernameHeader      = document.getElementById('usernameHeader');
+    const verifyIcon          = document.getElementById('verifyIcon');
+    const usernameWarning     = document.getElementById('usernameWarning');
+
+    // نافذة تعديل الملف الشخصي
+    const profileModal        = document.getElementById('profileModal');
+    const profileDisplayName  = document.getElementById('profileDisplayName');
+    const profileUsername     = document.getElementById('profileUsername');
+    const profileAvatarInput  = document.getElementById('profileAvatar');
+    const avatarPreview       = document.getElementById('avatarPreview');
+    const saveProfileBtn      = document.getElementById('saveProfileBtn');
+    const closeProfileBtn     = profileModal.querySelector('.close-btn');
+
+    // نافذة إنشاء بوست
+    const postModal           = document.getElementById('postModal');
+    const closePostBtn        = postModal.querySelector('.close-btn');
+    const submitPostBtn       = postModal.querySelector('.submit-btn');
+    const postText            = document.getElementById('postText');
+    const postImage           = document.getElementById('postImage');
+    const imagePreview        = document.getElementById('imagePreview');
+
+    // نافذة عرض الصورة
+    const imageModal          = document.getElementById('imageModal');
+    const closeImageBtn       = imageModal.querySelector('.close-image-btn');
+    const modalImage          = document.getElementById('modalImage');
+
+    // منطقة الفيد
+    const feed                = document.getElementById('feed');
+    const noPostsMessage      = document.querySelector('.no-posts');
+
+    // معلومات المستخدم والمشاركات
+    let currentDisplayName = '';
+    let currentUsername = '';
+    let currentAvatarData = ''; // Data URL للأفتار
+    let currentVerified = false;
+    let usernameSetDate = null; // timestamp عند تعيين اليوزرنيم
+    let posts = [];             // مصفوفة تخزن كل البوستات
+
+    /* ===========================================================
+       0) دالة لإنشاء أفتار افتراضي (لو ما عند المستخدم أفتار مخصص)
+       =========================================================== */
+    function generateAvatarPlaceholder(name) {
+        if (!name) return '';
+        const initial = name.charAt(0).toUpperCase();
+        const colors = [
+            '#5B8C85', '#E8A24D', '#A8DADC', '#F39C12', '#4D8A7E',
+            '#F0B267', '#C4E1D7', '#DEA057', '#6FA49D', '#F9C271',
+            '#8AB8B3', '#FFD182', '#A3B9B8', '#F1B88B', '#B7D3D2',
+            '#E2A36B', '#C9E0DE', '#FFC99B'
+        ];
+        const colorIndex = initial.charCodeAt(0) % colors.length;
+        const bgColor = colors[colorIndex];
+        const textColor = '#FFFFFF'; // White text
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 48px Tajawal';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = textColor;
+        ctx.fillText(initial, canvas.width / 2, canvas.height / 2);
+
+        return canvas.toDataURL();
+    }
+
+    /* ===========================================================
+       1) دالة للتحقّق مما إذا كان اليوزرنيم مدرجًا في VERIFIED_USERNAMES
+       =========================================================== */
+    function isUserGloballyVerified(username) {
+      return VERIFIED_USERNAMES.includes(username);
+    }
+
+    /* ===========================================================
+       2) حفظ البيانات في localStorage
+       =========================================================== */
+    function saveToStorage() {
+      const profileObj = {
+        displayName: currentDisplayName,
+        username: currentUsername,
+        avatar: currentAvatarData,
+        verified: currentVerified,
+        usernameSetDate: usernameSetDate // timestamp
+      };
+      localStorage.setItem('saudiApp-profile', JSON.stringify(profileObj));
+      localStorage.setItem('saudiApp-posts', JSON.stringify(posts));
+    }
+
+    /* ===========================================================
+       3) إظهار/إخفاء رسالة "ما فيه أي بوستات"
+       =========================================================== */
+    function toggleNoPostsMessage() {
+      if (posts.length === 0) {
+        noPostsMessage.style.display = 'block';
+      } else {
+        noPostsMessage.style.display = 'none';
+      }
+    }
+
+    /* ===========================================================
+       4) دالة لإنشاء عنصر DOM لكل بوست في الفيد
+       =========================================================== */
+    function createPostElement(post, index) {
+      // الحاوية الرئيسية للبوست
+      const postDiv = document.createElement('div');
+      postDiv.classList.add('post');
+      postDiv.dataset.id = post.id;
+      // تأخير في الأنيميشن لإظهار البوستات واحدة تلو الأخرى
+      postDiv.style.animationDelay = `${index * 0.08}s`;
+
+      // --- رأس البوست (Avatar، DisplayName، Username، Verified، التوقيت) ---
+      const postHeader = document.createElement('div');
+      postHeader.classList.add('post-header');
+
+      const avatarImg = document.createElement('img');
+      avatarImg.classList.add('post-avatar');
+      avatarImg.src = post.avatar || generateAvatarPlaceholder(post.displayName);
+      postHeader.appendChild(avatarImg);
+
+      const userInfoDiv = document.createElement('div');
+      const userDisplay = document.createElement('div');
+      userDisplay.classList.add('display-name');
+      userDisplay.textContent = post.displayName;
+
+      if (post.verified) {
+        const verifiedIcon = document.createElement('i');
+        verifiedIcon.classList.add('material-icons');
+        verifiedIcon.style.color = '#1DA1F2';
+        verifiedIcon.style.fontSize = '1.2rem';
+        verifiedIcon.title = 'موثق';
+        verifiedIcon.textContent = 'verified';
+        userDisplay.appendChild(verifiedIcon);
+      }
+
+      const userNameSpan = document.createElement('div');
+      userNameSpan.classList.add('username');
+      userNameSpan.textContent = '@' + post.username;
+
+      const timeSpan = document.createElement('div');
+      timeSpan.classList.add('post-time');
+      const dateObj = new Date(post.timestamp);
+      // تنسيق التاريخ عربي
+      const options = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric'
+      };
+      timeSpan.textContent = dateObj.toLocaleDateString('ar-SA', options);
+
+      userInfoDiv.appendChild(userDisplay);
+      userInfoDiv.appendChild(userNameSpan);
+      userInfoDiv.appendChild(timeSpan);
+      postHeader.appendChild(userInfoDiv);
+      postDiv.appendChild(postHeader);
+
+      // --- نص البوست إن وجد ---
+      if (post.text && post.text.trim() !== '') {
+        const p = document.createElement('p');
+        p.classList.add('post-text');
+        p.textContent = post.text;
+        postDiv.appendChild(p);
+      }
+
+      // --- صورة البوست إن وجدت ---
+      if (post.image) {
+        const img = document.createElement('img');
+        img.classList.add('post-image');
+        img.alt = 'صورة المشاركة';
+        img.src = post.image;
+
+        // عند النقر عليها → إظهار في Lightbox
+        img.addEventListener('click', function() {
+          modalImage.src = img.src;
+          imageModal.classList.add('show');
+        });
+
+        postDiv.appendChild(img);
+      }
+
+      // --- قسم الأفعال: إعجاب (Like)، تعليق (Comment)، حذف البوست ---
+      const actionsDiv = document.createElement('div');
+      actionsDiv.classList.add('actions');
+
+      // زر الإعجاب
+      const likeBtn = document.createElement('div');
+      likeBtn.classList.add('action-btn');
+      likeBtn.innerHTML = `
+        <i class="material-icons">${post.liked ? 'favorite' : 'favorite_border'}</i>
+        <span class="likes-count">${post.likeCount}</span>
+      `;
+      if (post.liked) likeBtn.classList.add('liked');
+      likeBtn.addEventListener('click', function() {
+        post.liked = !post.liked;
+        post.likeCount += post.liked ? 1 : -1;
+        likeBtn.querySelector('.likes-count').textContent = post.likeCount;
+        likeBtn.querySelector('i').textContent = post.liked ? 'favorite' : 'favorite_border';
+        likeBtn.classList.toggle('liked', post.liked);
+        saveToStorage();
+      });
+      actionsDiv.appendChild(likeBtn);
+
+      // زر التعليق (يوجد خانة خاصة بالتعليقات تظهر وتختفي)
+      const commentToggleBtn = document.createElement('div');
+      commentToggleBtn.classList.add('action-btn');
+      commentToggleBtn.innerHTML = `
+        <i class="material-icons">chat_bubble</i>
+        <span class="comments-count">${post.comments.length}</span>
+      `;
+      const commentSection = document.createElement('div');
+      commentSection.classList.add('comment-section');
+
+      commentToggleBtn.addEventListener('click', function() {
+        commentSection.classList.toggle('show-comments');
+      });
+      actionsDiv.appendChild(commentToggleBtn);
+
+      // زر حذف البوست
+      const deletePostBtn = document.createElement('div');
+      deletePostBtn.classList.add('delete-post-btn');
+      deletePostBtn.innerHTML = `<i class="material-icons">delete</i>`;
+      deletePostBtn.title = 'حذف البوست';
+      deletePostBtn.addEventListener('click', function() {
+        if (confirm('هل تبغى تحذف هذا البوست؟')) {
+          posts = posts.filter(p => p.id !== post.id);
+          saveToStorage();
+          renderFeed();
+        }
+      });
+      actionsDiv.appendChild(deletePostBtn);
+
+      postDiv.appendChild(actionsDiv);
+
+      // --- Footer: معلومات بسيطة ---
+      const footer = document.createElement('div');
+      footer.classList.add('post-footer');
+      footer.textContent = `نشرته ${post.displayName} يوم ${dateObj.toLocaleDateString('ar-SA', options)}`;
+      postDiv.appendChild(footer);
+
+      // --- قسم التعليقات (مخفي افتراضيًا) ---
+      const commentInputContainer = document.createElement('div');
+      commentInputContainer.classList.add('comment-input-container');
+      const commentInput = document.createElement('input');
+      commentInput.type = 'text';
+      commentInput.placeholder = 'اكتب تعليقك...';
+      const sendCommentBtn = document.createElement('button');
+      sendCommentBtn.innerHTML = '<i class="material-icons">send</i>';
+      sendCommentBtn.title = 'نشر التعليق';
+
+      commentInputContainer.appendChild(commentInput);
+      commentInputContainer.appendChild(sendCommentBtn);
+      commentSection.appendChild(commentInputContainer);
+
+      const commentsList = document.createElement('div');
+      commentsList.classList.add('comments-list');
+      commentSection.appendChild(commentsList);
+
+      // دالة لإضافة تعليق جديد في DOM
+      function addCommentElement(comment) {
+        const commentDiv = document.createElement('div');
+        commentDiv.classList.add('comment');
+        commentDiv.dataset.commentId = comment.id;
+
+        // رأس التعليق: أفتار + displayName + username + verified + الوقت
+        const commentHeader = document.createElement('div');
+        commentHeader.classList.add('comment-header');
+
+        const cAvatar = document.createElement('img');
+        cAvatar.classList.add('comment-avatar');
+        cAvatar.src = comment.avatar || generateAvatarPlaceholder(comment.displayName);
+        commentHeader.appendChild(cAvatar);
+
+        const cUserInfo = document.createElement('div');
+        const cUserSpan = document.createElement('div');
+        cUserSpan.classList.add('comment-user');
+        cUserSpan.textContent = comment.displayName;
+
+        if (comment.verified) {
+          const verifiedIconC = document.createElement('i');
+          verifiedIconC.classList.add('material-icons');
+          verifiedIconC.style.color = '#1DA1F2';
+          verifiedIconC.style.fontSize = '1.1rem';
+          verifiedIconC.title = 'موثق';
+          verifiedIconC.textContent = 'verified';
+          cUserSpan.appendChild(verifiedIconC);
+        }
+
+        const cUserNameSpan = document.createElement('div');
+        cUserNameSpan.classList.add('comment-username');
+        cUserNameSpan.textContent = '@' + comment.username;
+
+        const cTimeSpan = document.createElement('div');
+        cTimeSpan.classList.add('comment-time');
+        const cDate = new Date(comment.timestamp);
+        cTimeSpan.textContent = cDate.toLocaleDateString('ar-SA', {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        });
+
+        cUserInfo.appendChild(cUserSpan);
+        cUserInfo.appendChild(cUserNameSpan);
+        cUserInfo.appendChild(cTimeSpan);
+        commentHeader.appendChild(cUserInfo);
+        commentDiv.appendChild(commentHeader);
+
+        // نص التعليق
+        const commentP = document.createElement('p');
+        commentP.classList.add('comment-text');
+        commentP.textContent = comment.text;
+        commentDiv.appendChild(commentP);
+
+        // زر إعجاب التعليق
+        const commentActions = document.createElement('div');
+        commentActions.classList.add('comment-actions');
+        commentActions.innerHTML = `
+          <i class="material-icons">${comment.liked ? 'favorite' : 'favorite_border'}</i>
+          <span class="comment-likes-count">${comment.likeCount}</span>
+        `;
+        if (comment.liked) commentActions.classList.add('liked-comment');
+        commentActions.addEventListener('click', function() {
+          comment.liked = !comment.liked;
+          comment.likeCount += comment.liked ? 1 : -1;
+          commentActions.querySelector('.comment-likes-count').textContent = comment.likeCount;
+          commentActions.querySelector('i').textContent = comment.liked ? 'favorite' : 'favorite_border';
+          commentActions.classList.toggle('liked-comment', comment.liked);
+          saveToStorage();
+        });
+        commentDiv.appendChild(commentActions);
+
+        // زر حذف التعليق
+        const deleteCommentBtn = document.createElement('div');
+        deleteCommentBtn.classList.add('delete-comment-btn');
+        deleteCommentBtn.innerHTML = `<i class="material-icons">close</i>`;
+        deleteCommentBtn.title = 'حذف التعليق';
+        deleteCommentBtn.addEventListener('click', function() {
+          if (confirm('هل تبغى تحذف هذا التعليق؟')) {
+            post.comments = post.comments.filter(c => c.id !== comment.id);
+            saveToStorage();
+            commentDiv.remove();
+            const newCount = post.comments.length;
+            commentToggleBtn.querySelector('.comments-count').textContent = newCount;
+          }
+        });
+        commentDiv.appendChild(deleteCommentBtn);
+
+        commentsList.appendChild(commentDiv);
+      }
+
+      // إضافة كل التعليقات المحفوظة
+      post.comments.forEach(c => addCommentElement(c));
+
+      // عند الضغط على "نشر التعليق"
+      sendCommentBtn.addEventListener('click', function() {
+        const commentText = commentInput.value.trim();
+        if (!commentText) {
+          alert('اكتب تعليق قبل لا تنشر');
+          return;
+        }
+        const newComment = {
+          id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+          displayName: currentDisplayName,
+          username: currentUsername,
+          avatar: currentAvatarData,
+          verified: currentVerified,
+          text: commentText,
+          timestamp: Date.now(),
+          likeCount: 0,
+          liked: false
+        };
+        post.comments.unshift(newComment);
+        saveToStorage();
+        addCommentElement(newComment);
+        commentInput.value = '';
+        // تحديث عداد التعليقات
+        const newCount = post.comments.length;
+        commentToggleBtn.querySelector('.comments-count').textContent = newCount;
+      });
+
+      postDiv.appendChild(commentSection);
+      return postDiv;
+    }
+
+    /* ===========================================================
+       5) دالة لإعادة رسم فيد البوستات بالكامل
+       =========================================================== */
+    function renderFeed() {
+      feed.innerHTML = '';
+      toggleNoPostsMessage();
+      if (posts.length === 0) {
+        feed.appendChild(noPostsMessage);
+        return;
+      }
+      posts.forEach((post, index) => {
+        const postElement = createPostElement(post, index);
+        feed.appendChild(postElement);
+      });
+    }
+
+    /* ===========================================================
+       6) دالة للتحقّق من انتهاء صلاحية اليوزرنيم
+       =========================================================== */
+    function checkUsernameExpiration() {
+      if (!usernameSetDate) return;
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      const timeSinceSet = now - usernameSetDate;
+      if (timeSinceSet >= sevenDays) {
+        // انتهت صلاحية اليوزرنيم → أجبر المستخدم على التغيير
+        showExpirationAlert();
+      } else {
+        // حساب الأيام المتبقية
+        const daysLeft = Math.ceil((sevenDays - timeSinceSet) / (24 * 60 * 60 * 1000));
+        if (daysLeft <= 1) {
+          // إذا بقي يوم أو أقل → أظهر تحذير
+          usernameWarning.textContent = `تنبيه: اسم المستخدم يتغير كل 7 أيام. باقي لك ${daysLeft} يوم.`;
+          usernameWarning.style.display = 'block';
+        } else {
+          usernameWarning.style.display = 'none';
+        }
+      }
+    }
+
+    function showExpirationAlert() {
+      usernameWarning.textContent = `انتهت صلاحية اسم المستخدم! لازم تغيّره الآن.`;
+      usernameWarning.style.backgroundColor = '#F8D7DA';
+      usernameWarning.style.color = '#721C24';
+      usernameWarning.style.border = '1px solid #F5C6CB';
+      usernameWarning.style.display = 'block';
+      // افتح نموذج تعديل الملف الشخصي تلقائيًا
+      setTimeout(() => {
+        openProfileModal(true); // force change
+      }, 500);
+    }
+
+    /* ===========================================================
+       7) تحميل البيانات عند بدء الصفحة
+       =========================================================== */
+    window.addEventListener('DOMContentLoaded', function() {
+      loadFromStorage();
+
+      // إذا لم يتم التسجيل بعد (لا يوجد User Profile) → نظهر شاشة التسجيل
+      if (!currentUsername) {
+        regPage.style.display = 'flex';
+        mainPage.style.display = 'none';
+      } else {
+        // إذا المستخدم مسجل بالفعل → عرض الصفحة الرئيسية
+        // ضبط الحالة المبدئية لـ verified بناءً على VERIFIED_USERNAMES
+        currentVerified = isUserGloballyVerified(currentUsername);
+        setupHeader();
+        regPage.style.display = 'none';
+        mainPage.style.display = 'flex';
+        checkUsernameExpiration();
+        renderFeed();
+      }
+
+      // تفضيل الوضع الداكن
+      const darkModePref = JSON.parse(localStorage.getItem('saudiApp-darkmode') || 'false');
+      if (darkModePref) {
+        document.body.classList.add('dark-mode');
+      }
+    });
+
+    /* ===========================================================
+       8) عند إرسال نموذج التسجيل
+       =========================================================== */
+    regForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const dispName = displayNameInput.value.trim();
+      const userName = usernameInput.value.trim();
+
+      // التحقق من الاسم واليوزرنيم
+      if (dispName.length < 1) {
+        alert('لازم تحط اسم العرض.');
+        return;
+      }
+      const usernameRegex = /^[A-Za-z0-9]{3,}$/;
+      if (!usernameRegex.test(userName)) {
+        alert('اسم المستخدم لازم يكون 3 حروف أو أرقام على الأقل، بلا رموز.');
+        return;
+      }
+
+      currentDisplayName = dispName;
+      currentUsername = userName;
+      currentAvatarData = generateAvatarPlaceholder(currentDisplayName);
+      usernameSetDate = Date.now(); // ضبط تاريخ التعيين الحالي
+
+      // التحقّق من الحالة الموثّقة بناءً على VERIFIED_USERNAMES
+      currentVerified = isUserGloballyVerified(currentUsername);
+
+      setupHeader();
+
+      // أنيميشن للخروج من شاشة التسجيل
+      regPage.style.animation = 'fadeOutUp 0.5s ease forwards';
+      regPage.addEventListener('animationend', function handler() {
+        regPage.style.display = 'none';
+        mainPage.style.display = 'flex';
+        mainPage.style.animation = 'fadeInScale 0.5s ease forwards';
+        regPage.removeEventListener('animationend', handler);
+      });
+
+      saveToStorage();
+      renderFeed();
+    });
+
+    /* ===========================================================
+       9) إعداد بيانات الهيدر (عرض DisplayName + Username + Avatar + Verified)
+       =========================================================== */
+    function setupHeader() {
+      displayNameHeader.textContent = currentDisplayName;
+      if (currentVerified) {
+        verifyIcon.style.display = 'inline';
+      } else {
+        verifyIcon.style.display = 'none';
+      }
+      usernameHeader.textContent = '@' + currentUsername;
+      if (currentAvatarData) {
+        headerAvatar.src = currentAvatarData;
+        headerAvatar.style.display = 'block';
+      } else {
+        headerAvatar.src = generateAvatarPlaceholder(currentDisplayName);
+        headerAvatar.style.display = 'block';
+      }
+    }
+
+    /* ===========================================================
+       10) فتح نافذة إنشاء البوست عند الضغط على "+"
+       =========================================================== */
+    addPostBtn.addEventListener('click', function() {
+      postText.value = '';
+      postImage.value = '';
+      imagePreview.src = '';
+      imagePreview.style.display = 'none';
+      postModal.classList.add('show');
+    });
+
+    /* ===========================================================
+       11) إغلاق نافذة إنشاء البوست عند الضغط على (×)
+       =========================================================== */
+    closePostBtn.addEventListener('click', function() {
+      postModal.classList.remove('show');
+    });
+
+    /* ===========================================================
+       12) معاينة الصورة في نافذة "إنشاء بوست"
+       =========================================================== */
+    postImage.addEventListener('change', function() {
+      const file = postImage.files[0];
+      if (!file) {
+        imagePreview.src = '';
+        imagePreview.style.display = 'none';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* ===========================================================
+       13) عند نشر بوست جديد
+       =========================================================== */
+    submitPostBtn.addEventListener('click', function() {
+      const textValue = postText.value.trim();
+      const file      = postImage.files[0];
+
+      if (!textValue && !file) {
+        alert('اكتب كلام أو حط صورة قبل لا تنشر');
+        return;
+      }
+
+      // إنشاء كائن البوست الجديد
+      const newPost = {
+        id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        displayName: currentDisplayName,
+        username: currentUsername,
+        avatar: currentAvatarData,
+        verified: currentVerified,
+        text: textValue,
+        image: '',
+        timestamp: Date.now(),
+        likeCount: 0,
+        liked: false,
+        comments: []
+      };
+
+      // إذا كانت هناك صورة مرفوعة → تحويلها إلى Data URL
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          newPost.image = e.target.result;
+          posts.unshift(newPost);
+          saveToStorage();
+          renderFeed();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        posts.unshift(newPost);
+        saveToStorage();
+        renderFeed();
+      }
+
+      postModal.classList.remove('show');
+      postText.value = '';
+      postImage.value = '';
+      imagePreview.src = '';
+      imagePreview.style.display = 'none';
+    });
+
+    /* ===========================================================
+       14) إغلاق أي نافذة إذا نقرنا بالخارج
+       =========================================================== */
+    window.addEventListener('click', function(event) {
+      if (event.target === postModal) {
+        postModal.classList.remove('show');
+      }
+      if (event.target === imageModal) {
+        imageModal.classList.remove('show');
+        modalImage.src = '';
+      }
+      if (event.target === profileModal) {
+        profileModal.classList.remove('show');
+      }
+    });
+
+    /* ===========================================================
+       15) إغلاق نافذة Lightbox عند النقر على علامة ×
+       =========================================================== */
+    closeImageBtn.addEventListener('click', function() {
+      imageModal.classList.remove('show');
+      modalImage.src = '';
+    });
+
+    /* ===========================================================
+       16) فتح نافذة تعديل الملف الشخصي عند النقر على الأيقونة
+       =========================================================== */
+    profileBtn.addEventListener('click', function() {
+      openProfileModal(false);
+    });
+
+    function openProfileModal(forceChange) {
+      // إذا انتهت صلاحية اليوزرنيم ولا forceChange، لا نسمح بفتحه قبل التغيير
+      if (!forceChange && isUsernameExpired()) return;
+      // ملء حقول العرض واليوزرنيم الحالية
+      profileDisplayName.value = currentDisplayName;
+      profileUsername.value = currentUsername;
+      // إذا فيه أفتار
+      if (currentAvatarData) {
+        avatarPreview.src = currentAvatarData;
+        avatarPreview.style.display = 'block';
+      } else {
+        avatarPreview.src = '';
+        avatarPreview.style.display = 'none';
+      }
+      profileModal.classList.add('show');
+    }
+
+    function isUsernameExpired() {
+      if (!usernameSetDate) return false;
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      return (now - usernameSetDate) >= sevenDays;
+    }
+
+    /* ===========================================================
+       17) إغلاق نافذة تعديل الملف الشخصي عند النقر على (×)
+       =========================================================== */
+    closeProfileBtn.addEventListener('click', function() {
+      // إذا اسم المستخدم منتهي الصلاحية، لا نغلق النافذة قبل التحديث
+      if (isUsernameExpired()) {
+        alert('لازم تغيّر اسم المستخدم أولاً.');
+        return;
+      }
+      profileModal.classList.remove('show');
+    });
+
+    /* ===========================================================
+       18) معاينة صورة الأفتار قبل الحفظ
+       =========================================================== */
+    profileAvatarInput.addEventListener('change', function() {
+      const file = profileAvatarInput.files[0];
+      if (!file) {
+        avatarPreview.src = '';
+        avatarPreview.style.display = 'none';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        avatarPreview.src = e.target.result;
+        avatarPreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* ===========================================================
+       19) حفظ التعديلات على الملف الشخصي
+       =========================================================== */
+    saveProfileBtn.addEventListener('click', function() {
+      const newDisp = profileDisplayName.value.trim();
+      const newUser = profileUsername.value.trim();
+
+      if (!newDisp) {
+        alert('لازم تحط اسم العرض عشان تحفظ');
+        return;
+      }
+      const usernameRegex = /^[A-Za-z0-9]{3,}$/;
+      if (!usernameRegex.test(newUser)) {
+        alert('اسم المستخدم لازم يكون 3 حروف أو أرقام على الأقل، بلا رموز.');
+        return;
+      }
+      // إذا تغيّر اليوزرنيم أو انتهت صلاحيته → تحديث تاريخ التعيين
+      if (newUser !== currentUsername || isUsernameExpired()) {
+        usernameSetDate = Date.now();
+      }
+
+      const oldDisplay = currentDisplayName;
+      const oldUser = currentUsername;
+
+      currentDisplayName = newDisp;
+      currentUsername = newUser;
+
+      // التحقّق من الحالة الموثّقة بناءً على VERIFIED_USERNAMES
+      currentVerified = isUserGloballyVerified(currentUsername);
+
+      setupHeader(); // يحدث الاسم المعروض واليوزرنيم والموثّق في الهيدر
+
+      const file = profileAvatarInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          currentAvatarData = e.target.result;
+          headerAvatar.src = currentAvatarData;
+          headerAvatar.style.display = 'block';
+
+          // تحديث الأفتار والأسماء والتوثيق في البوستات والتعليقات
+          posts.forEach(p => {
+            if (p.username === oldUser) {
+              p.displayName = currentDisplayName;
+              p.username = currentUsername;
+              p.avatar = currentAvatarData;
+              p.verified = currentVerified;
+            }
+            p.comments.forEach(c => {
+              if (c.username === oldUser) {
+                c.displayName = currentDisplayName;
+                c.username = currentUsername;
+                c.avatar = currentAvatarData;
+                c.verified = currentVerified;
+              }
+            });
+          });
+          saveToStorage();
+          renderFeed();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // إذا غيّر الاسم أو اليوزرنيم أو التوثيق بدون صورة جديدة
+        posts.forEach(p => {
+          if (p.username === oldUser) {
+            p.displayName = currentDisplayName;
+            p.username = currentUsername;
+            p.verified = currentVerified;
+          }
+          p.comments.forEach(c => {
+            if (c.username === oldUser) {
+              c.displayName = currentDisplayName;
+              c.username = currentUsername;
+              c.verified = currentVerified;
+            }
+          });
+        });
+        // إذا لم يكن هناك أفتار مخصص بعد أو تغيّر اليوزرنيم/الـDisplayName
+        if (!currentAvatarData || oldDisplay !== currentDisplayName) {
+          currentAvatarData = generateAvatarPlaceholder(currentDisplayName);
+          headerAvatar.src = currentAvatarData;
+        }
+        saveToStorage();
+        renderFeed();
+      }
+
+      profileModal.classList.remove('show');
+      usernameWarning.style.display = 'none';
+    });
+
+    /* ===========================================================
+       20) تبديل بين الوضع الفاتح والداكن
+       =========================================================== */
+    toggleThemeBtn.addEventListener('click', function() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('saudiApp-darkmode', JSON.stringify(isDark));
+
+      // أنيميشن للأيقونة
+      const icon = toggleThemeBtn.querySelector('i');
+      icon.style.animation = 'rotateIcon 0.3s ease-out';
+      icon.addEventListener('animationend', () => {
+        icon.style.animation = '';
+      });
+    });
+
+    /* ===========================================================
+       21) تحميل البيانات من localStorage
+       =========================================================== */
+    function loadFromStorage() {
+        const storedProfile = JSON.parse(localStorage.getItem('saudiApp-profile'));
+        if (storedProfile) {
+            currentDisplayName = storedProfile.displayName || '';
+            currentUsername = storedProfile.username || '';
+            currentAvatarData = storedProfile.avatar || '';
+            currentVerified = storedProfile.verified || false;
+            usernameSetDate = storedProfile.usernameSetDate || null;
+        }
+        const storedPosts = JSON.parse(localStorage.getItem('saudiApp-posts'));
+        if (storedPosts) {
+            posts = storedPosts;
+        }
+    }
+  </script>
+</body>
+</html>
