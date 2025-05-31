@@ -3,45 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>تطبيق المشاركات والدردشة باللهجة السعودية</title>
+  <title>تطبيق المشاركات مع Firebase باللهجة السعودية</title>
 
-  <!-- Google Font (Tajawal) for Arabic -->
+  <!-- Google Font (Tajawal) للإستايل العربي -->
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&display=swap" rel="stylesheet">
-  <!-- Google Material Icons -->
+  <!-- أيقونات Material Icons من جوجل -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!--
-    ----------------------------------------
-    ✎ إعداد متغيرات التحقق من المستخدمين (Config)
-    ----------------------------------------
-    افترض أنك تضع ملف .env في جذر المشروع يحتوي على:
+    ================================================
+    ✎ إعداد قائمة المستخدمين الموثَّقين من .env أو Build
+    ================================================
+    عند النشر: استبدل المحتوى التالي بأيّ قيمة تُحقَن من ملف .env:
       VERIFIED_USERNAMES=alice,bob,charlie
-    وبواسطة بناء (build) أو سكربت صغير، تُحوّل هذا المتغير إلى مصفوفة JavaScript:
-      const VERIFIED_USERNAMES = ['alice','bob','charlie'];
-    في بيئات سيرفر حقيقي (مثل Node.js مع Express)، يمكنك حقن هذا المتغير في الصفحة عبر Template engine.
-    لكن هنا، نضعه كمثال ثابت. يجب عليك استبداله ديناميكيًا بقيمك من .env عند نشر الموقع.
+    وحوِّلها إلى مصفوفة JavaScript تلقائيًّا خلال عملية البناء (Build).
+    هذا مثال ثابت للتوضيح:
   -->
   <script>
-    // مثال توضيحي: استبدل المحتوى أدناه في وقت النشر بقائمة المستخدمين الموثَّقين الموجودة في .env
-    // إذا كان لديك build tool، حوّل process.env.VERIFIED_USERNAMES إلى مصفوفة JavaScript.
-    const VERIFIED_USERNAMES = ['fhd', 'bob', 'charlie'];
-    // ↓ لا تعدل هذا الجزء إذا كنت ستحقن VERIFIED_USERNAMES تلقائيًا من السيرفر
+    const VERIFIED_USERNAMES = ['alice', 'bob', 'charlie'];
   </script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
   <style>
     /* ==============================
-     * * * NEW DESIGN VARIABLES * * *
+     * * * متغيرات التصميم الأساسية * * *
      * ============================== */
     :root {
-        --primary: #5B8C85;        /* Soft Teal-Blue */
-        --accent: #E8A24D;         /* Warm Ochre */
-        --bg: #F8F9FA;             /* Off-White/Light Gray */
-        --card-bg: #FFFFFF;
-        --text: #343A40;           /* Dark Charcoal */
+        --primary: #5B8C85;        /* أخضر هادئ */
+        --accent: #E8A24D;         /* أصفر داكن */
+        --bg: #F8F9FA;             /* خلفية فاتحة */
+        --card-bg: #FFFFFF;        /* خلفية البطاقات */
+        --text: #343A40;           /* نص داكن */
         --text-main: #212529;
-        --text-secondary: #6C757D; /* Medium Gray */
-        --text-muted: #ADB5BD;     /* Lighter Gray */
-        --border-color: #E9ECEF;   /* Very light border */
+        --text-secondary: #6C757D; /* نص ثانوي */
+        --text-muted: #ADB5BD;     /* نص باهت */
+        --border-color: #E9ECEF;   /* حدود فاتحة */
         --shadow-light: rgba(0,0,0,0.08);
         --shadow-medium: rgba(0,0,0,0.15);
         --shadow-deep: rgba(0,0,0,0.25);
@@ -53,7 +52,7 @@
         --border-radius-md: 10px;
         --border-radius-sm: 8px;
     }
-    /* Dark Mode specific variables */
+    /* Dark Mode متغيرات بالنسبة للوضع الداكن */
     .dark-mode {
         --primary: #76A5A0;
         --accent: #F0B267;
@@ -72,7 +71,7 @@
     }
 
     /* ==============================
-     * * * RESET & BASE STYLES * * *
+     * * * إعادة ضبط الأنماط الأساسية * * *
      * ============================== */
     * {
         box-sizing: border-box;
@@ -104,7 +103,7 @@
         max-width: 100%;
     }
 
-    /* Base styles for interactive elements */
+    /* تفاعل العناصر */
     button {
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
@@ -113,7 +112,7 @@
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
-    /* Accessibility: Reduced Motion */
+    /* الإعدادات عند تقليل الحركة */
     @media (prefers-reduced-motion: reduce) {
         * {
             animation-duration: 0.01ms !important;
@@ -124,7 +123,7 @@
     }
 
     /* ==============================
-     * * * ANIMATIONS * * *
+     * * * الأنيميشنات * * *
      * ============================== */
     @keyframes fadeInScale {
         from { opacity: 0; transform: scale(0.98) translateY(10px); }
@@ -155,7 +154,7 @@
     }
 
     /* ==============================
-     * * * REGISTRATION SCREEN * * *
+     * * * شاشة التسجيل (ابتدائية) * * *
      * ============================== */
     #regPage {
         display: flex;
@@ -224,7 +223,7 @@
     }
 
     /* ==============================
-     * * * USERNAME EXPIRATION BANNER * * *
+     * * * شريط تحذير لصلاحية اسم المستخدم * * *
      * ============================== */
     #usernameWarning {
         background-color: #FFF3CD;
@@ -237,7 +236,7 @@
     }
 
     /* ==============================
-     * * * MAIN PAGE * * *
+     * * * الصفحة الرئيسية بعد التسجيل * * *
      * ============================== */
     #mainPage {
         display: none;
@@ -334,7 +333,7 @@
     }
 
     /* ==============================
-     * * * FEED AREA * * *
+     * * * منطقة الفيد (Posts Feed) * * *
      * ============================== */
     #feed {
         flex: 1;
@@ -480,7 +479,7 @@
     }
 
     /* ==============================
-     * * * COMMENTS SECTION * * *
+     * * * قسم التعليقات داخل البوست * * *
      * ============================== */
     .post .comment-section {
         border-top: 1px solid var(--border-color);
@@ -629,7 +628,7 @@
     }
 
     /* ==============================
-     * * * MODAL STYLES * * *
+     * * * النوافذ المنبثقة (Modals) * * *
      * ============================== */
     .modal {
         position: fixed;
@@ -667,7 +666,7 @@
     }
 
     /* ==============================
-     * * * PROFILE EDIT MODAL * * *
+     * * * نافذة تعديل الملف الشخصي * * *
      * ============================== */
     #profileModalContent h2 {
         margin-bottom: 1.8rem;
@@ -732,7 +731,7 @@
     }
 
     /* ==============================
-     * * * CREATE POST MODAL * * *
+     * * * نافذة إنشاء بوست * * *
      * ============================== */
     #postModalContent h2 {
         margin-bottom: 1.8rem;
@@ -835,7 +834,7 @@
     }
 
     /* ==============================
-     * * * IMAGE LIGHTBOX MODAL * * *
+     * * * نافذة عرض الصورة (Lightbox) * * *
      * ============================== */
     #imageModalContent {
         position: relative;
@@ -871,7 +870,7 @@
         box-shadow: 0 4px 15px var(--shadow-medium);
         transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
         color: var(--text-main);
-        z-index: 10; /* Ensure it's above the image */
+        z-index: 10;
     }
     .close-image-btn:hover {
         background-color: var(--bg);
@@ -883,7 +882,7 @@
     }
 
     /* ==============================
-     * * * RESPONSIVE DESIGN * * *
+     * * * Responsive Design * * *
      * ============================== */
     @media (max-width: 768px) {
         header {
@@ -1190,7 +1189,25 @@
 
   <script>
     /* ===========================================================
-       المراجع للعناصر (DOM References)
+       تهيئة Firebase
+       =========================================================== */
+    // تعويض القيم التالية بقيم مشروعك الحقيقية من Firebase Console
+    const firebaseConfig = {
+      apiKey: "AIzaSyXXXXX-xxxxx_xxxxxx-xxxxxx",       // من إعدادات مشروع Firebase
+      authDomain: "your-project-id.firebaseapp.com",
+      databaseURL: "https://your-project-id-default-rtdb.firebaseio.com",
+      projectId: "your-project-id",
+      storageBucket: "your-project-id.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef1234567890"
+    };
+    // تهيئة تطبيق Firebase
+    firebase.initializeApp(firebaseConfig);
+    // مرجع قاعدة البيانات
+    const db = firebase.database();
+
+    /* ===========================================================
+       مراجع لعناصر الـ DOM
        =========================================================== */
     const regPage             = document.getElementById('regPage');
     const regForm             = document.getElementById('regForm');
@@ -1233,16 +1250,16 @@
     const feed                = document.getElementById('feed');
     const noPostsMessage      = document.querySelector('.no-posts');
 
-    // معلومات المستخدم والمشاركات
+    // متغيرات الحالة
     let currentDisplayName = '';
     let currentUsername = '';
     let currentAvatarData = ''; // Data URL للأفتار
     let currentVerified = false;
     let usernameSetDate = null; // timestamp عند تعيين اليوزرنيم
-    let posts = [];             // مصفوفة تخزن كل البوستات
+    let posts = [];             // مصفوفة تخزن البوستات محليًا بعد جلبها من Firebase
 
     /* ===========================================================
-       0) دالة لإنشاء أفتار افتراضي (لو ما عند المستخدم أفتار مخصص)
+       دالة لإنشاء أفتار افتراضي (لو ما عند المستخدم أفتار مخصص)
        =========================================================== */
     function generateAvatarPlaceholder(name) {
         if (!name) return '';
@@ -1255,7 +1272,7 @@
         ];
         const colorIndex = initial.charCodeAt(0) % colors.length;
         const bgColor = colors[colorIndex];
-        const textColor = '#FFFFFF'; // White text
+        const textColor = '#FFFFFF'; // النص بالأبيض
 
         const canvas = document.createElement('canvas');
         canvas.width = 100;
@@ -1274,29 +1291,15 @@
     }
 
     /* ===========================================================
-       1) دالة للتحقّق مما إذا كان اليوزرنيم مدرجًا في VERIFIED_USERNAMES
+       دالة للتحقّق إذا كان اسم المستخدم موجودًا في VERIFIED_USERNAMES
+       (يأتي من مصفوفة ثابتة أو من .env بعد البناء)
        =========================================================== */
     function isUserGloballyVerified(username) {
       return VERIFIED_USERNAMES.includes(username);
     }
 
     /* ===========================================================
-       2) حفظ البيانات في localStorage
-       =========================================================== */
-    function saveToStorage() {
-      const profileObj = {
-        displayName: currentDisplayName,
-        username: currentUsername,
-        avatar: currentAvatarData,
-        verified: currentVerified,
-        usernameSetDate: usernameSetDate // timestamp
-      };
-      localStorage.setItem('saudiApp-profile', JSON.stringify(profileObj));
-      localStorage.setItem('saudiApp-posts', JSON.stringify(posts));
-    }
-
-    /* ===========================================================
-       3) إظهار/إخفاء رسالة "ما فيه أي بوستات"
+       دالة لإظهار/إخفاء رسالة "ما فيه أي بوستات"
        =========================================================== */
     function toggleNoPostsMessage() {
       if (posts.length === 0) {
@@ -1307,17 +1310,19 @@
     }
 
     /* ===========================================================
-       4) دالة لإنشاء عنصر DOM لكل بوست في الفيد
+       دالة لإنشاء عنصر DOM لكل بوست في الفيد
+       post: كائن يحتوي الحقول:
+         id, displayName, username, avatar, verified, text, image,
+         timestamp, likeCount, comments (مصفوفة الكومنتات)
+       index: لترتيب الأنيميشن
        =========================================================== */
     function createPostElement(post, index) {
-      // الحاوية الرئيسية للبوست
       const postDiv = document.createElement('div');
       postDiv.classList.add('post');
       postDiv.dataset.id = post.id;
-      // تأخير في الأنيميشن لإظهار البوستات واحدة تلو الأخرى
       postDiv.style.animationDelay = `${index * 0.08}s`;
 
-      // --- رأس البوست (Avatar، DisplayName، Username، Verified، التوقيت) ---
+      // رأس البوست: Avatar + DisplayName + Username + Verified + التوقيت
       const postHeader = document.createElement('div');
       postHeader.classList.add('post-header');
 
@@ -1330,7 +1335,6 @@
       const userDisplay = document.createElement('div');
       userDisplay.classList.add('display-name');
       userDisplay.textContent = post.displayName;
-
       if (post.verified) {
         const verifiedIcon = document.createElement('i');
         verifiedIcon.classList.add('material-icons');
@@ -1340,7 +1344,6 @@
         verifiedIcon.textContent = 'verified';
         userDisplay.appendChild(verifiedIcon);
       }
-
       const userNameSpan = document.createElement('div');
       userNameSpan.classList.add('username');
       userNameSpan.textContent = '@' + post.username;
@@ -1348,7 +1351,6 @@
       const timeSpan = document.createElement('div');
       timeSpan.classList.add('post-time');
       const dateObj = new Date(post.timestamp);
-      // تنسيق التاريخ عربي
       const options = {
         year: 'numeric',
         month: 'short',
@@ -1364,7 +1366,7 @@
       postHeader.appendChild(userInfoDiv);
       postDiv.appendChild(postHeader);
 
-      // --- نص البوست إن وجد ---
+      // نص البوست (إذا وُجد)
       if (post.text && post.text.trim() !== '') {
         const p = document.createElement('p');
         p.classList.add('post-text');
@@ -1372,27 +1374,24 @@
         postDiv.appendChild(p);
       }
 
-      // --- صورة البوست إن وجدت ---
+      // صورة البوست (إذا وُجدت)
       if (post.image) {
-        const img = document.createElement('img');
-        img.classList.add('post-image');
-        img.alt = 'صورة المشاركة';
-        img.src = post.image;
-
-        // عند النقر عليها → إظهار في Lightbox
-        img.addEventListener('click', function() {
-          modalImage.src = img.src;
+        const imgEl = document.createElement('img');
+        imgEl.classList.add('post-image');
+        imgEl.alt = 'صورة المشاركة';
+        imgEl.src = post.image;
+        imgEl.addEventListener('click', function() {
+          modalImage.src = imgEl.src;
           imageModal.classList.add('show');
         });
-
-        postDiv.appendChild(img);
+        postDiv.appendChild(imgEl);
       }
 
-      // --- قسم الأفعال: إعجاب (Like)، تعليق (Comment)، حذف البوست ---
+      // قسم الأفعال (Like, Comment, Delete)
       const actionsDiv = document.createElement('div');
       actionsDiv.classList.add('actions');
 
-      // زر الإعجاب
+      // زر الإعجاب (Like)
       const likeBtn = document.createElement('div');
       likeBtn.classList.add('action-btn');
       likeBtn.innerHTML = `
@@ -1401,53 +1400,63 @@
       `;
       if (post.liked) likeBtn.classList.add('liked');
       likeBtn.addEventListener('click', function() {
-        post.liked = !post.liked;
-        post.likeCount += post.liked ? 1 : -1;
-        likeBtn.querySelector('.likes-count').textContent = post.likeCount;
-        likeBtn.querySelector('i').textContent = post.liked ? 'favorite' : 'favorite_border';
-        likeBtn.classList.toggle('liked', post.liked);
-        saveToStorage();
+        const newLiked = !post.liked;
+        const newLikeCount = post.likeCount + (newLiked ? 1 : -1);
+        // تحديث Firebase
+        const updates = {};
+        updates[`posts/${post.id}/liked`] = newLiked;
+        updates[`posts/${post.id}/likeCount`] = newLikeCount;
+        db.ref().update(updates).then(() => {
+          // إعادة قراءة البوستات بعد التحديث
+          fetchAndRenderPosts();
+        }).catch(err => {
+          console.error('خطأ في تحديث الإعجاب:', err);
+        });
       });
       actionsDiv.appendChild(likeBtn);
 
-      // زر التعليق (يوجد خانة خاصة بالتعليقات تظهر وتختفي)
+      // زر التعليق (Comment toggle)
       const commentToggleBtn = document.createElement('div');
       commentToggleBtn.classList.add('action-btn');
       commentToggleBtn.innerHTML = `
         <i class="material-icons">chat_bubble</i>
-        <span class="comments-count">${post.comments.length}</span>
+        <span class="comments-count">${post.comments ? post.comments.length : 0}</span>
       `;
       const commentSection = document.createElement('div');
       commentSection.classList.add('comment-section');
-
       commentToggleBtn.addEventListener('click', function() {
         commentSection.classList.toggle('show-comments');
       });
       actionsDiv.appendChild(commentToggleBtn);
 
-      // زر حذف البوست
+      // زر حذف البوست (Delete)
       const deletePostBtn = document.createElement('div');
       deletePostBtn.classList.add('delete-post-btn');
       deletePostBtn.innerHTML = `<i class="material-icons">delete</i>`;
       deletePostBtn.title = 'حذف البوست';
-      deletePostBtn.addEventListener('click', function() {
-        if (confirm('هل تبغى تحذف هذا البوست؟')) {
-          posts = posts.filter(p => p.id !== post.id);
-          saveToStorage();
-          renderFeed();
-        }
-      });
-      actionsDiv.appendChild(deletePostBtn);
-
+      // يمكن للمستخدم حذف بوساته فقط
+      if (post.username === currentUsername) {
+        deletePostBtn.addEventListener('click', function() {
+          if (confirm('هل تبغى تحذف هذا البوست؟')) {
+            // إزالة البوست من Firebase (بما في ذلك التعليقات)
+            db.ref(`posts/${post.id}`).remove().then(() => {
+              fetchAndRenderPosts();
+            }).catch(err => {
+              console.error('خطأ في حذف البوست:', err);
+            });
+          }
+        });
+        actionsDiv.appendChild(deletePostBtn);
+      }
       postDiv.appendChild(actionsDiv);
 
-      // --- Footer: معلومات بسيطة ---
+      // Footer: معلومات النشر
       const footer = document.createElement('div');
       footer.classList.add('post-footer');
       footer.textContent = `نشرته ${post.displayName} يوم ${dateObj.toLocaleDateString('ar-SA', options)}`;
       postDiv.appendChild(footer);
 
-      // --- قسم التعليقات (مخفي افتراضيًا) ---
+      // إنشاء قسم التعليقات (مخفي افتراضيًا)
       const commentInputContainer = document.createElement('div');
       commentInputContainer.classList.add('comment-input-container');
       const commentInput = document.createElement('input');
@@ -1465,27 +1474,25 @@
       commentsList.classList.add('comments-list');
       commentSection.appendChild(commentsList);
 
-      // دالة لإضافة تعليق جديد في DOM
-      function addCommentElement(comment) {
+      // دالة لإضافة تعليق داخل DOM
+      function addCommentElement(commentObj) {
         const commentDiv = document.createElement('div');
         commentDiv.classList.add('comment');
-        commentDiv.dataset.commentId = comment.id;
+        commentDiv.dataset.commentId = commentObj.id;
 
-        // رأس التعليق: أفتار + displayName + username + verified + الوقت
         const commentHeader = document.createElement('div');
         commentHeader.classList.add('comment-header');
 
         const cAvatar = document.createElement('img');
         cAvatar.classList.add('comment-avatar');
-        cAvatar.src = comment.avatar || generateAvatarPlaceholder(comment.displayName);
+        cAvatar.src = commentObj.avatar || generateAvatarPlaceholder(commentObj.displayName);
         commentHeader.appendChild(cAvatar);
 
         const cUserInfo = document.createElement('div');
         const cUserSpan = document.createElement('div');
         cUserSpan.classList.add('comment-user');
-        cUserSpan.textContent = comment.displayName;
-
-        if (comment.verified) {
+        cUserSpan.textContent = commentObj.displayName;
+        if (commentObj.verified) {
           const verifiedIconC = document.createElement('i');
           verifiedIconC.classList.add('material-icons');
           verifiedIconC.style.color = '#1DA1F2';
@@ -1494,14 +1501,13 @@
           verifiedIconC.textContent = 'verified';
           cUserSpan.appendChild(verifiedIconC);
         }
-
         const cUserNameSpan = document.createElement('div');
         cUserNameSpan.classList.add('comment-username');
-        cUserNameSpan.textContent = '@' + comment.username;
+        cUserNameSpan.textContent = '@' + commentObj.username;
 
         const cTimeSpan = document.createElement('div');
         cTimeSpan.classList.add('comment-time');
-        const cDate = new Date(comment.timestamp);
+        const cDate = new Date(commentObj.timestamp);
         cTimeSpan.textContent = cDate.toLocaleDateString('ar-SA', {
           month: 'short',
           day: 'numeric',
@@ -1518,58 +1524,71 @@
         // نص التعليق
         const commentP = document.createElement('p');
         commentP.classList.add('comment-text');
-        commentP.textContent = comment.text;
+        commentP.textContent = commentObj.text;
         commentDiv.appendChild(commentP);
 
         // زر إعجاب التعليق
         const commentActions = document.createElement('div');
         commentActions.classList.add('comment-actions');
         commentActions.innerHTML = `
-          <i class="material-icons">${comment.liked ? 'favorite' : 'favorite_border'}</i>
-          <span class="comment-likes-count">${comment.likeCount}</span>
+          <i class="material-icons">${commentObj.liked ? 'favorite' : 'favorite_border'}</i>
+          <span class="comment-likes-count">${commentObj.likeCount}</span>
         `;
-        if (comment.liked) commentActions.classList.add('liked-comment');
+        if (commentObj.liked) commentActions.classList.add('liked-comment');
         commentActions.addEventListener('click', function() {
-          comment.liked = !comment.liked;
-          comment.likeCount += comment.liked ? 1 : -1;
-          commentActions.querySelector('.comment-likes-count').textContent = comment.likeCount;
-          commentActions.querySelector('i').textContent = comment.liked ? 'favorite' : 'favorite_border';
-          commentActions.classList.toggle('liked-comment', comment.liked);
-          saveToStorage();
+          const newLiked = !commentObj.liked;
+          const newLikeCount = commentObj.likeCount + (newLiked ? 1 : -1);
+          // تحديث الحقل في Firebase
+          const updates = {};
+          updates[`posts/${post.id}/comments/${commentObj.id}/liked`] = newLiked;
+          updates[`posts/${post.id}/comments/${commentObj.id}/likeCount`] = newLikeCount;
+          db.ref().update(updates).then(() => {
+            fetchAndRenderPosts();
+          }).catch(err => {
+            console.error('خطأ في تحديث إعجاب التعليق:', err);
+          });
         });
         commentDiv.appendChild(commentActions);
 
-        // زر حذف التعليق
-        const deleteCommentBtn = document.createElement('div');
-        deleteCommentBtn.classList.add('delete-comment-btn');
-        deleteCommentBtn.innerHTML = `<i class="material-icons">close</i>`;
-        deleteCommentBtn.title = 'حذف التعليق';
-        deleteCommentBtn.addEventListener('click', function() {
-          if (confirm('هل تبغى تحذف هذا التعليق؟')) {
-            post.comments = post.comments.filter(c => c.id !== comment.id);
-            saveToStorage();
-            commentDiv.remove();
-            const newCount = post.comments.length;
-            commentToggleBtn.querySelector('.comments-count').textContent = newCount;
-          }
-        });
-        commentDiv.appendChild(deleteCommentBtn);
+        // زر حذف التعليق (لصاحب التعليق فقط)
+        if (commentObj.username === currentUsername) {
+          const deleteCommentBtn = document.createElement('div');
+          deleteCommentBtn.classList.add('delete-comment-btn');
+          deleteCommentBtn.innerHTML = `<i class="material-icons">close</i>`;
+          deleteCommentBtn.title = 'حذف التعليق';
+          deleteCommentBtn.addEventListener('click', function() {
+            if (confirm('هل تبغى تحذف هذا التعليق؟')) {
+              db.ref(`posts/${post.id}/comments/${commentObj.id}`).remove().then(() => {
+                fetchAndRenderPosts();
+              }).catch(err => {
+                console.error('خطأ في حذف التعليق:', err);
+              });
+            }
+          });
+          commentDiv.appendChild(deleteCommentBtn);
+        }
 
         commentsList.appendChild(commentDiv);
       }
 
-      // إضافة كل التعليقات المحفوظة
-      post.comments.forEach(c => addCommentElement(c));
+      // إضافة التعليقات الموجودة للبوست
+      if (post.comments) {
+        Object.keys(post.comments).forEach(cKey => {
+          const commentObj = post.comments[cKey];
+          commentObj.id = cKey;
+          addCommentElement(commentObj);
+        });
+      }
 
-      // عند الضغط على "نشر التعليق"
+      // التعامل مع نشر تعليق جديد
       sendCommentBtn.addEventListener('click', function() {
         const commentText = commentInput.value.trim();
         if (!commentText) {
           alert('اكتب تعليق قبل لا تنشر');
           return;
         }
+        const newCommentKey = db.ref().child(`posts/${post.id}/comments`).push().key;
         const newComment = {
-          id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
           displayName: currentDisplayName,
           username: currentUsername,
           avatar: currentAvatarData,
@@ -1579,13 +1598,15 @@
           likeCount: 0,
           liked: false
         };
-        post.comments.unshift(newComment);
-        saveToStorage();
-        addCommentElement(newComment);
-        commentInput.value = '';
-        // تحديث عداد التعليقات
-        const newCount = post.comments.length;
-        commentToggleBtn.querySelector('.comments-count').textContent = newCount;
+        // خزن التعليق في Firebase
+        db.ref(`posts/${post.id}/comments/${newCommentKey}`).set(newComment)
+          .then(() => {
+            // بعد الحفظ، أزل نص التعليق وأعد جلب الفيد
+            commentInput.value = '';
+            fetchAndRenderPosts();
+          }).catch(err => {
+            console.error('خطأ في إضافة التعليق:', err);
+          });
       });
 
       postDiv.appendChild(commentSection);
@@ -1593,7 +1614,33 @@
     }
 
     /* ===========================================================
-       5) دالة لإعادة رسم فيد البوستات بالكامل
+       دالة لجلب البوستات من Firebase وترتيبها بالزمن ثم عرضها
+       =========================================================== */
+    function fetchAndRenderPosts() {
+      db.ref('posts').orderByChild('timestamp').once('value', snapshot => {
+        const val = snapshot.val();
+        posts = [];
+        if (val) {
+          Object.keys(val).forEach(key => {
+            const postObj = val[key];
+            postObj.id = key;
+            // تأكد من تحويل التعليقات إلى مصفوفة (ورفق المفتاح لكل تعليق)
+            if (postObj.comments) {
+              Object.keys(postObj.comments).forEach(cKey => {
+                postObj.comments[cKey].id = cKey;
+              });
+            }
+            posts.push(postObj);
+          });
+          // ترتيب البوستات تنازليًا حسب timestamp (الأحدث أولًا)
+          posts.sort((a, b) => b.timestamp - a.timestamp);
+        }
+        renderFeed();
+      });
+    }
+
+    /* ===========================================================
+       دالة لعرض الفيد بالكامل بناءً على مصفوفة posts (محلية)
        =========================================================== */
     function renderFeed() {
       feed.innerHTML = '';
@@ -1609,7 +1656,7 @@
     }
 
     /* ===========================================================
-       6) دالة للتحقّق من انتهاء صلاحية اليوزرنيم
+       التحقّق من انتهاء صلاحية اليوزرنيم كل 7 أيام
        =========================================================== */
     function checkUsernameExpiration() {
       if (!usernameSetDate) return;
@@ -1638,34 +1685,33 @@
       usernameWarning.style.color = '#721C24';
       usernameWarning.style.border = '1px solid #F5C6CB';
       usernameWarning.style.display = 'block';
-      // افتح نموذج تعديل الملف الشخصي تلقائيًا
+      // افتح نموذج تعديل الملف الشخصي تلقائيًا بعد قليل
       setTimeout(() => {
-        openProfileModal(true); // force change
+        openProfileModal(true);
       }, 500);
     }
 
     /* ===========================================================
-       7) تحميل البيانات عند بدء الصفحة
+       تحميل البيانات عند بدء الصفحة
        =========================================================== */
     window.addEventListener('DOMContentLoaded', function() {
-      loadFromStorage();
+      loadFromStorage(); // تحميل بروفايل المستخدم (name, username, avatar, verified, usernameSetDate)
 
-      // إذا لم يتم التسجيل بعد (لا يوجد User Profile) → نظهر شاشة التسجيل
       if (!currentUsername) {
+        // إذا لم يسجل بعد → أظهر شاشة التسجيل
         regPage.style.display = 'flex';
         mainPage.style.display = 'none';
       } else {
-        // إذا المستخدم مسجل بالفعل → عرض الصفحة الرئيسية
-        // ضبط الحالة المبدئية لـ verified بناءً على VERIFIED_USERNAMES
+        // إذا مسجل → اضبط الهيدر وحالة التوثيق ثم جلب البوستات
         currentVerified = isUserGloballyVerified(currentUsername);
         setupHeader();
         regPage.style.display = 'none';
         mainPage.style.display = 'flex';
         checkUsernameExpiration();
-        renderFeed();
+        fetchAndRenderPosts();
       }
 
-      // تفضيل الوضع الداكن
+      // تفضيل الوضع الداكن حسب التخزين
       const darkModePref = JSON.parse(localStorage.getItem('saudiApp-darkmode') || 'false');
       if (darkModePref) {
         document.body.classList.add('dark-mode');
@@ -1673,14 +1719,13 @@
     });
 
     /* ===========================================================
-       8) عند إرسال نموذج التسجيل
+       عند إرسال نموذج التسجيل
        =========================================================== */
     regForm.addEventListener('submit', function(e) {
       e.preventDefault();
       const dispName = displayNameInput.value.trim();
       const userName = usernameInput.value.trim();
 
-      // التحقق من الاسم واليوزرنيم
       if (dispName.length < 1) {
         alert('لازم تحط اسم العرض.');
         return;
@@ -1694,14 +1739,12 @@
       currentDisplayName = dispName;
       currentUsername = userName;
       currentAvatarData = generateAvatarPlaceholder(currentDisplayName);
-      usernameSetDate = Date.now(); // ضبط تاريخ التعيين الحالي
-
-      // التحقّق من الحالة الموثّقة بناءً على VERIFIED_USERNAMES
+      usernameSetDate = Date.now();
       currentVerified = isUserGloballyVerified(currentUsername);
 
       setupHeader();
 
-      // أنيميشن للخروج من شاشة التسجيل
+      // أنيميشن الخروج من شاشة التسجيل
       regPage.style.animation = 'fadeOutUp 0.5s ease forwards';
       regPage.addEventListener('animationend', function handler() {
         regPage.style.display = 'none';
@@ -1711,11 +1754,11 @@
       });
 
       saveToStorage();
-      renderFeed();
+      fetchAndRenderPosts();
     });
 
     /* ===========================================================
-       9) إعداد بيانات الهيدر (عرض DisplayName + Username + Avatar + Verified)
+       إعداد الهيدر (DisplayName، Username، Avatar، Verified)
        =========================================================== */
     function setupHeader() {
       displayNameHeader.textContent = currentDisplayName;
@@ -1735,7 +1778,7 @@
     }
 
     /* ===========================================================
-       10) فتح نافذة إنشاء البوست عند الضغط على "+"
+       فتح نافذة إنشاء البوست
        =========================================================== */
     addPostBtn.addEventListener('click', function() {
       postText.value = '';
@@ -1746,14 +1789,14 @@
     });
 
     /* ===========================================================
-       11) إغلاق نافذة إنشاء البوست عند الضغط على (×)
+       إغلاق نافذة إنشاء البوست عند الضغط على (×)
        =========================================================== */
     closePostBtn.addEventListener('click', function() {
       postModal.classList.remove('show');
     });
 
     /* ===========================================================
-       12) معاينة الصورة في نافذة "إنشاء بوست"
+       معاينة الصورة في نافذة إنشاء البوست
        =========================================================== */
     postImage.addEventListener('change', function() {
       const file = postImage.files[0];
@@ -1771,7 +1814,7 @@
     });
 
     /* ===========================================================
-       13) عند نشر بوست جديد
+       نشر بوست جديد إلى Firebase
        =========================================================== */
     submitPostBtn.addEventListener('click', function() {
       const textValue = postText.value.trim();
@@ -1784,7 +1827,6 @@
 
       // إنشاء كائن البوست الجديد
       const newPost = {
-        id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         displayName: currentDisplayName,
         username: currentUsername,
         avatar: currentAvatarData,
@@ -1794,34 +1836,45 @@
         timestamp: Date.now(),
         likeCount: 0,
         liked: false,
-        comments: []
+        comments: {}
       };
 
-      // إذا كانت هناك صورة مرفوعة → تحويلها إلى Data URL
+      // إرسال البوست إلى Firebase
       if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
           newPost.image = e.target.result;
-          posts.unshift(newPost);
-          saveToStorage();
-          renderFeed();
+          const newPostKey = db.ref().child('posts').push().key;
+          db.ref(`posts/${newPostKey}`).set(newPost)
+            .then(() => {
+              postModal.classList.remove('show');
+              postText.value = '';
+              postImage.value = '';
+              imagePreview.src = '';
+              imagePreview.style.display = 'none';
+              fetchAndRenderPosts();
+            }).catch(err => {
+              console.error('خطأ في حفظ البوست:', err);
+              alert('حصل خطأ أثناء حفظ البوست.');
+            });
         };
         reader.readAsDataURL(file);
       } else {
-        posts.unshift(newPost);
-        saveToStorage();
-        renderFeed();
+        const newPostKey = db.ref().child('posts').push().key;
+        db.ref(`posts/${newPostKey}`).set(newPost)
+          .then(() => {
+            postModal.classList.remove('show');
+            postText.value = '';
+            fetchAndRenderPosts();
+          }).catch(err => {
+            console.error('خطأ في حفظ البوست:', err);
+            alert('حصل خطأ أثناء حفظ البوست.');
+          });
       }
-
-      postModal.classList.remove('show');
-      postText.value = '';
-      postImage.value = '';
-      imagePreview.src = '';
-      imagePreview.style.display = 'none';
     });
 
     /* ===========================================================
-       14) إغلاق أي نافذة إذا نقرنا بالخارج
+       إغلاق النوافذ عند النقر خارجها
        =========================================================== */
     window.addEventListener('click', function(event) {
       if (event.target === postModal) {
@@ -1837,7 +1890,7 @@
     });
 
     /* ===========================================================
-       15) إغلاق نافذة Lightbox عند النقر على علامة ×
+       إغلاق نافذة Lightbox عند النقر على علامة ×
        =========================================================== */
     closeImageBtn.addEventListener('click', function() {
       imageModal.classList.remove('show');
@@ -1845,19 +1898,16 @@
     });
 
     /* ===========================================================
-       16) فتح نافذة تعديل الملف الشخصي عند النقر على الأيقونة
+       فتح نافذة تعديل الملف الشخصي
        =========================================================== */
     profileBtn.addEventListener('click', function() {
       openProfileModal(false);
     });
 
     function openProfileModal(forceChange) {
-      // إذا انتهت صلاحية اليوزرنيم ولا forceChange، لا نسمح بفتحه قبل التغيير
       if (!forceChange && isUsernameExpired()) return;
-      // ملء حقول العرض واليوزرنيم الحالية
       profileDisplayName.value = currentDisplayName;
       profileUsername.value = currentUsername;
-      // إذا فيه أفتار
       if (currentAvatarData) {
         avatarPreview.src = currentAvatarData;
         avatarPreview.style.display = 'block';
@@ -1876,10 +1926,9 @@
     }
 
     /* ===========================================================
-       17) إغلاق نافذة تعديل الملف الشخصي عند النقر على (×)
+       إغلاق نافذة تعديل الملف الشخصي عند النقر على (×)
        =========================================================== */
     closeProfileBtn.addEventListener('click', function() {
-      // إذا اسم المستخدم منتهي الصلاحية، لا نغلق النافذة قبل التحديث
       if (isUsernameExpired()) {
         alert('لازم تغيّر اسم المستخدم أولاً.');
         return;
@@ -1888,7 +1937,7 @@
     });
 
     /* ===========================================================
-       18) معاينة صورة الأفتار قبل الحفظ
+       معاينة صورة الأفتار قبل الحفظ
        =========================================================== */
     profileAvatarInput.addEventListener('change', function() {
       const file = profileAvatarInput.files[0];
@@ -1906,7 +1955,7 @@
     });
 
     /* ===========================================================
-       19) حفظ التعديلات على الملف الشخصي
+       حفظ التعديلات على الملف الشخصي (profile) وتحديث Firebase إذا لزم
        =========================================================== */
     saveProfileBtn.addEventListener('click', function() {
       const newDisp = profileDisplayName.value.trim();
@@ -1921,6 +1970,7 @@
         alert('اسم المستخدم لازم يكون 3 حروف أو أرقام على الأقل، بلا رموز.');
         return;
       }
+
       // إذا تغيّر اليوزرنيم أو انتهت صلاحيته → تحديث تاريخ التعيين
       if (newUser !== currentUsername || isUsernameExpired()) {
         usernameSetDate = Date.now();
@@ -1931,11 +1981,9 @@
 
       currentDisplayName = newDisp;
       currentUsername = newUser;
-
-      // التحقّق من الحالة الموثّقة بناءً على VERIFIED_USERNAMES
       currentVerified = isUserGloballyVerified(currentUsername);
 
-      setupHeader(); // يحدث الاسم المعروض واليوزرنيم والموثّق في الهيدر
+      setupHeader();
 
       const file = profileAvatarInput.files[0];
       if (file) {
@@ -1945,50 +1993,88 @@
           headerAvatar.src = currentAvatarData;
           headerAvatar.style.display = 'block';
 
-          // تحديث الأفتار والأسماء والتوثيق في البوستات والتعليقات
-          posts.forEach(p => {
-            if (p.username === oldUser) {
-              p.displayName = currentDisplayName;
-              p.username = currentUsername;
-              p.avatar = currentAvatarData;
-              p.verified = currentVerified;
-            }
-            p.comments.forEach(c => {
-              if (c.username === oldUser) {
-                c.displayName = currentDisplayName;
-                c.username = currentUsername;
-                c.avatar = currentAvatarData;
-                c.verified = currentVerified;
+          // تحديث البوستات والتعليقات في Firebase لهذا المستخدم
+          db.ref('posts').once('value', snapshot => {
+            const allPosts = snapshot.val() || {};
+            const updates = {};
+            Object.keys(allPosts).forEach(postKey => {
+              const p = allPosts[postKey];
+              // تحديث البوستات التي أنشأها هذا المستخدم
+              if (p.username === oldUser) {
+                updates[`posts/${postKey}/displayName`] = currentDisplayName;
+                updates[`posts/${postKey}/username`] = currentUsername;
+                updates[`posts/${postKey}/avatar`] = currentAvatarData;
+                updates[`posts/${postKey}/verified`] = currentVerified;
+              }
+              // تحديث تعليقات هذا المستخدم
+              if (p.comments) {
+                Object.keys(p.comments).forEach(commentKey => {
+                  const c = p.comments[commentKey];
+                  if (c.username === oldUser) {
+                    updates[`posts/${postKey}/comments/${commentKey}/displayName`] = currentDisplayName;
+                    updates[`posts/${postKey}/comments/${commentKey}/username`] = currentUsername;
+                    updates[`posts/${postKey}/comments/${commentKey}/avatar`] = currentAvatarData;
+                    updates[`posts/${postKey}/comments/${commentKey}/verified`] = currentVerified;
+                  }
+                });
               }
             });
+            if (Object.keys(updates).length > 0) {
+              db.ref().update(updates).then(() => {
+                saveToStorage();
+                fetchAndRenderPosts();
+              }).catch(err => {
+                console.error('خطأ في تحديث بيانات البروفايل في Firebase:', err);
+              });
+            } else {
+              saveToStorage();
+            }
           });
-          saveToStorage();
-          renderFeed();
         };
         reader.readAsDataURL(file);
       } else {
-        // إذا غيّر الاسم أو اليوزرنيم أو التوثيق بدون صورة جديدة
-        posts.forEach(p => {
-          if (p.username === oldUser) {
-            p.displayName = currentDisplayName;
-            p.username = currentUsername;
-            p.verified = currentVerified;
-          }
-          p.comments.forEach(c => {
-            if (c.username === oldUser) {
-              c.displayName = currentDisplayName;
-              c.username = currentUsername;
-              c.verified = currentVerified;
+        // بدون صورة جديدة → فقط تحديث الحقول الأخرى
+        db.ref('posts').once('value', snapshot => {
+          const allPosts = snapshot.val() || {};
+          const updates = {};
+          Object.keys(allPosts).forEach(postKey => {
+            const p = allPosts[postKey];
+            if (p.username === oldUser) {
+              updates[`posts/${postKey}/displayName`] = currentDisplayName;
+              updates[`posts/${postKey}/username`] = currentUsername;
+              updates[`posts/${postKey}/verified`] = currentVerified;
+            }
+            if (p.comments) {
+              Object.keys(p.comments).forEach(commentKey => {
+                const c = p.comments[commentKey];
+                if (c.username === oldUser) {
+                  updates[`posts/${postKey}/comments/${commentKey}/displayName`] = currentDisplayName;
+                  updates[`posts/${postKey}/comments/${commentKey}/username`] = currentUsername;
+                  updates[`posts/${postKey}/comments/${commentKey}/verified`] = currentVerified;
+                }
+              });
             }
           });
+          if (Object.keys(updates).length > 0) {
+            db.ref().update(updates).then(() => {
+              // تحديث Avatar الافتراضي لو لم يكن لديه أفتار مخصص
+              if (!currentAvatarData) {
+                currentAvatarData = generateAvatarPlaceholder(currentDisplayName);
+                headerAvatar.src = currentAvatarData;
+              }
+              saveToStorage();
+              fetchAndRenderPosts();
+            }).catch(err => {
+              console.error('خطأ في تحديث البروفايل في Firebase:', err);
+            });
+          } else {
+            if (!currentAvatarData) {
+              currentAvatarData = generateAvatarPlaceholder(currentDisplayName);
+              headerAvatar.src = currentAvatarData;
+            }
+            saveToStorage();
+          }
         });
-        // إذا لم يكن هناك أفتار مخصص بعد أو تغيّر اليوزرنيم/الـDisplayName
-        if (!currentAvatarData || oldDisplay !== currentDisplayName) {
-          currentAvatarData = generateAvatarPlaceholder(currentDisplayName);
-          headerAvatar.src = currentAvatarData;
-        }
-        saveToStorage();
-        renderFeed();
       }
 
       profileModal.classList.remove('show');
@@ -1996,14 +2082,13 @@
     });
 
     /* ===========================================================
-       20) تبديل بين الوضع الفاتح والداكن
+       تبديل بين الوضع الفاتح والداكن
        =========================================================== */
     toggleThemeBtn.addEventListener('click', function() {
       document.body.classList.toggle('dark-mode');
       const isDark = document.body.classList.contains('dark-mode');
       localStorage.setItem('saudiApp-darkmode', JSON.stringify(isDark));
 
-      // أنيميشن للأيقونة
       const icon = toggleThemeBtn.querySelector('i');
       icon.style.animation = 'rotateIcon 0.3s ease-out';
       icon.addEventListener('animationend', () => {
@@ -2012,21 +2097,31 @@
     });
 
     /* ===========================================================
-       21) تحميل البيانات من localStorage
+       حفظ بروفايل المستخدم محليًا في localStorage
+       =========================================================== */
+    function saveToStorage() {
+      const profileObj = {
+        displayName: currentDisplayName,
+        username: currentUsername,
+        avatar: currentAvatarData,
+        verified: currentVerified,
+        usernameSetDate: usernameSetDate
+      };
+      localStorage.setItem('saudiApp-profile', JSON.stringify(profileObj));
+    }
+
+    /* ===========================================================
+       تحميل بروفايل المستخدم من localStorage
        =========================================================== */
     function loadFromStorage() {
-        const storedProfile = JSON.parse(localStorage.getItem('saudiApp-profile'));
-        if (storedProfile) {
-            currentDisplayName = storedProfile.displayName || '';
-            currentUsername = storedProfile.username || '';
-            currentAvatarData = storedProfile.avatar || '';
-            currentVerified = storedProfile.verified || false;
-            usernameSetDate = storedProfile.usernameSetDate || null;
-        }
-        const storedPosts = JSON.parse(localStorage.getItem('saudiApp-posts'));
-        if (storedPosts) {
-            posts = storedPosts;
-        }
+      const storedProfile = JSON.parse(localStorage.getItem('saudiApp-profile'));
+      if (storedProfile) {
+        currentDisplayName = storedProfile.displayName || '';
+        currentUsername = storedProfile.username || '';
+        currentAvatarData = storedProfile.avatar || '';
+        currentVerified = storedProfile.verified || false;
+        usernameSetDate = storedProfile.usernameSetDate || null;
+      }
     }
   </script>
 </body>
