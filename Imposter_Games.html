@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imposter Games</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0d1117;
+      --panel:#161b22;
+      --panel2:#1d2633;
+      --border:#30363d;
+      --border2:#444c56;
+      --text:#e6edf3;
+      --muted:#7d8590;
+      --muted2:#adbac7;
+      --teal:#2dd4bf;
+      --teal-d:#0f766e;
+      --teal-dim:rgba(45,212,191,.10);
+      --amber:#fbbf24;
+      --amber-d:#d97706;
+      --amber-dim:rgba(251,191,36,.10);
+      --red:#f87171;
+      --red-dim:rgba(248,113,113,.10);
+      --green:#4ade80;
+      --green-dim:rgba(74,222,128,.10);
+      --shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Tajawal',sans-serif;
+      background:linear-gradient(180deg,#0b1118 0%, #0d1117 100%);
+      color:var(--text);
+      min-height:100vh;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      background-image:
+        radial-gradient(circle at 20% 20%, #fff 0 1px, transparent 1px),
+        radial-gradient(circle at 80% 30%, #fff 0 1px, transparent 1px),
+        radial-gradient(circle at 50% 80%, #fff 0 1px, transparent 1px);
+      background-size: 140px 140px, 180px 180px, 220px 220px;
+      z-index:0;
+    }
+    .app{
+      position:relative;
+      z-index:1;
+      max-width:780px;
+      margin:0 auto;
+      padding:24px 16px 70px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:24px;
+      animation:fadeDown .5s ease both;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .brand-icon{
+      width:48px;height:48px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--teal),var(--teal-d));
+      color:#032c28;
+      font-size:22px;font-weight:800;
+      box-shadow:0 8px 24px rgba(45,212,191,.25);
+    }
+    .brand h1{
+      font-size:24px;
+      font-weight:800;
+      line-height:1.1;
+      letter-spacing:-.02em;
+    }
+    .brand p{
+      font-size:12px;
+      color:var(--muted2);
+      margin-top:2px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--border);
+      padding:10px 14px;
+      border-radius:999px;
+      color:var(--muted2);
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .stepper{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:10px;
+      margin-bottom:24px;
+    }
+    .step{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 10px;
+      text-align:center;
+      transition:.25s ease;
+    }
+    .step .n{
+      width:28px;height:28px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 8px;
+      border:2px solid var(--border2);
+      color:var(--muted);
+      font-size:12px;font-weight:800;
+      background:#11161e;
+    }
+    .step .t{
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+    }
+    .step.active{
+      border-color:rgba(45,212,191,.4);
+      background:linear-gradient(180deg, rgba(45,212,191,.08), var(--panel));
+      transform:translateY(-2px);
+    }
+    .step.active .n{
+      border-color:var(--teal);
+      color:var(--teal);
+      background:rgba(45,212,191,.08);
+    }
+    .step.active .t{color:var(--teal)}
+    .step.done .n{
+      border-color:var(--teal-d);
+      background:var(--teal-d);
+      color:#fff;
+    }
+    .step.done .t{color:var(--muted2)}
+
+    .screen{display:none}
+    .screen.active{
+      display:block;
+      animation:slideIn .35s ease both;
+    }
+
+    .hero{
+      background:linear-gradient(180deg, rgba(45,212,191,.06), rgba(255,255,255,.01));
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:22px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow);
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      font-weight:800;
+      color:var(--teal);
+      background:rgba(45,212,191,.08);
+      border:1px solid rgba(45,212,191,.2);
+      border-radius:999px;
+      padding:5px 10px;
+      margin-bottom:12px;
+    }
+    .hero h2{
+      font-size:28px;
+      font-weight:800;
+      line-height:1.25;
+      margin-bottom:8px;
+    }
+    .hero p{
+      font-size:14px;
+      color:var(--muted2);
+      line-height:1.9;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:14px;
+      box-shadow:var(--shadow);
+    }
+
+    .row{display:flex; gap:10px; flex-wrap:wrap;}
+    .row > *{flex:1}
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius:12px;
+      padding:13px 18px;
+      font-family:'Tajawal',sans-serif;
+      font-size:15px;
+      font-weight:800;
+      transition:.2s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+    .btn:hover{transform:translateY(-2px)}
+    .btn:active{transform:scale(.98)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .btn-full{width:100%}
+    .btn-teal{
+      background:linear-gradient(135deg,var(--teal),var(--teal-d));
+      color:#032c28;
+      box-shadow:0 8px 22px rgba(45,212,191,.20);
+    }
+    .btn-ghost{
+      background:var(--panel2);
+      color:var(--muted2);
+      border:1px solid var(--border2);
+    }
+    .btn-amber{
+      background:linear-gradient(135deg,var(--amber),var(--amber-d));
+      color:#241700;
+      box-shadow:0 8px 22px rgba(251,191,36,.16);
+    }
+    .btn-red{
+      background:var(--red-dim);
+      color:var(--red);
+      border:1px solid rgba(248,113,113,.25);
+    }
+    .btn-green{
+      background:var(--green-dim);
+      color:var(--green);
+      border:1px solid rgba(74,222,128,.25);
+    }
+
+    .section-title{
+      font-size:18px;
+      font-weight:800;
+      margin-bottom:12px;
+    }
+    .section-sub{
+      font-size:13px;
+      color:var(--muted2);
+      line-height:1.8;
+      margin-bottom:14px;
+    }
+
+    .player-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .player-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+    }
+    .player-no{
+      width:34px;height:34px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(45,212,191,.08);
+      color:var(--teal);
+      font-weight:800;
+      border:1px solid rgba(45,212,191,.2);
+      flex-shrink:0;
+    }
+    .player-input{
+      flex:1;
+      background:transparent;
+      border:none;
+      outline:none;
+      color:var(--text);
+      font-family:'Tajawal',sans-serif;
+      font-size:15px;
+      font-weight:700;
+    }
+    .player-input::placeholder{color:var(--muted)}
+    .icon-btn{
+      border:none;
+      background:transparent;
+      color:var(--muted);
+      font-size:20px;
+      cursor:pointer;
+      padding:6px 8px;
+      border-radius:10px;
+      transition:.2s ease;
+    }
+    .icon-btn:hover{
+      color:var(--red);
+      background:rgba(248,113,113,.08);
+    }
+
+    .mini-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .select, .number{
+      width:100%;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px 14px;
+      color:var(--text);
+      font-family:'Tajawal',sans-serif;
+      font-size:14px;
+      font-weight:700;
+      outline:none;
+    }
+
+    .label{
+      display:block;
+      font-size:12px;
+      color:var(--muted2);
+      margin-bottom:8px;
+      font-weight:700;
+    }
+
+    .player-chip-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(145px,1fr));
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .chip{
+      border:1px solid var(--border);
+      background:var(--panel2);
+      border-radius:14px;
+      padding:14px 10px;
+      text-align:center;
+      transition:.25s ease;
+    }
+    .chip.current{
+      border-color:var(--teal);
+      background:rgba(45,212,191,.08);
+      box-shadow:0 0 0 3px rgba(45,212,191,.08);
+      transform:translateY(-2px);
+    }
+    .chip.done{
+      border-color:rgba(74,222,128,.30);
+      background:rgba(74,222,128,.08);
+    }
+    .chip .name{
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .chip .badge{
+      display:inline-block;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted2);
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      border-radius:999px;
+      padding:4px 10px;
+    }
+
+    .center-note{
+      text-align:center;
+      font-size:14px;
+      color:var(--muted2);
+      line-height:1.9;
+      margin-bottom:14px;
+    }
+    .center-note b{color:var(--teal)}
+
+    .reveal-box{
+      text-align:center;
+      border-radius:20px;
+      padding:28px 18px;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(45,212,191,.05), var(--panel2));
+      margin-bottom:14px;
+      animation:pop .3s ease both;
+    }
+    .reveal-box.imposter{
+      background:linear-gradient(180deg, rgba(248,113,113,.08), var(--panel2));
+      border-color:rgba(248,113,113,.25);
+    }
+    .reveal-role{
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      margin-bottom:10px;
+      color:var(--muted2);
+    }
+    .reveal-word{
+      font-size:44px;
+      font-weight:800;
+      line-height:1.2;
+      letter-spacing:-.03em;
+      margin-bottom:8px;
+      background:linear-gradient(135deg,var(--amber),#f59e0b);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .reveal-box.imposter .reveal-word{
+      background:linear-gradient(135deg,var(--red),#ef4444);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .reveal-hint{
+      font-size:13px;
+      color:var(--muted2);
+      line-height:1.9;
+    }
+
+    .q-card{
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:14px;
+      animation:slideIn .25s ease both;
+    }
+    .q-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .q-count{
+      font-size:11px;
+      font-weight:800;
+      color:var(--teal);
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .q-players{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted2);
+      font-weight:700;
+    }
+    .q-text{
+      font-size:22px;
+      font-weight:800;
+      line-height:1.7;
+      margin-bottom:10px;
+    }
+    .q-hint{
+      font-size:13px;
+      color:var(--muted2);
+      line-height:1.8;
+    }
+
+    .vote-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .vote-card{
+      background:var(--panel2);
+      border:2px solid var(--border);
+      border-radius:16px;
+      padding:16px 12px;
+      text-align:center;
+      cursor:pointer;
+      transition:.22s ease;
+    }
+    .vote-card:hover{
+      border-color:var(--teal);
+      transform:translateY(-3px);
+      background:rgba(45,212,191,.08);
+      box-shadow:0 10px 24px rgba(45,212,191,.10);
+    }
+    .vote-card .emoji{font-size:28px;margin-bottom:8px}
+    .vote-card .name{
+      font-size:16px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+    .vote-card .hint{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .result{
+      text-align:center;
+      padding:24px;
+      border-radius:20px;
+      border:1px solid var(--border);
+      background:var(--panel2);
+      margin-bottom:14px;
+      box-shadow:var(--shadow);
+    }
+    .result.good{
+      border-color:rgba(74,222,128,.3);
+      background:linear-gradient(180deg, rgba(74,222,128,.08), var(--panel2));
+    }
+    .result.bad{
+      border-color:rgba(248,113,113,.28);
+      background:linear-gradient(180deg, rgba(248,113,113,.08), var(--panel2));
+    }
+    .result .emoji{
+      font-size:48px;
+      display:block;
+      margin-bottom:10px;
+    }
+    .result h3{
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+    .result p{
+      font-size:14px;
+      color:var(--muted2);
+      line-height:2;
+    }
+    .result p b{color:var(--text)}
+
+    .info{
+      display:grid;
+      gap:8px;
+      margin-bottom:14px;
+    }
+    .info-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:12px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+    }
+    .info-item .k{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .info-item .v{
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .final-box{
+      text-align:center;
+      padding:22px;
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(251,191,36,.06), var(--panel2));
+      border:1px solid rgba(251,191,36,.18);
+      margin-bottom:14px;
+    }
+    .final-box .emoji{
+      font-size:42px;
+      display:block;
+      margin-bottom:10px;
+    }
+    .final-box h4{
+      font-size:20px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+    .final-box p{
+      font-size:14px;
+      line-height:1.9;
+      color:var(--muted2);
+    }
+    .final-box b{color:var(--text)}
+
+    .tiny{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.8;
+    }
+
+    @media (max-width:640px){
+      .stepper{grid-template-columns:repeat(5, minmax(0,1fr))}
+      .step{padding:10px 6px}
+      .step .t{font-size:10px}
+      .hero h2{font-size:24px}
+      .q-text{font-size:18px}
+      .reveal-word{font-size:36px}
+      .mini-grid{grid-template-columns:1fr}
+    }
+
+    @keyframes fadeDown{
+      from{opacity:0;transform:translateY(-12px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes slideIn{
+      from{opacity:0;transform:translateX(12px)}
+      to{opacity:1;transform:translateX(0)}
+    }
+    @keyframes pop{
+      0%{opacity:0;transform:scale(.95)}
+      100%{opacity:1;transform:scale(1)}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-icon">🎭</div>
+        <div>
+          <h1>Imposter Games</h1>
+          <p>جوال واحد • لعب جماعي • باللهجة السعودية</p>
+        </div>
+      </div>
+      <div class="pill">👥 عدد لاعبين مفتوح</div>
+    </div>
+
+    <div class="stepper">
+      <div class="step active" data-step="0"><div class="n">١</div><div class="t">اللاعبين</div></div>
+      <div class="step" data-step="1"><div class="n">٢</div><div class="t">الإعداد</div></div>
+      <div class="step" data-step="2"><div class="n">٣</div><div class="t">التوزيع</div></div>
+      <div class="step" data-step="3"><div class="n">٤</div><div class="t">الأسئلة</div></div>
+      <div class="step" data-step="4"><div class="n">٥</div><div class="t">التصويت</div></div>
+    </div>
+
+    <section class="screen active" id="screen-0">
+      <div class="hero">
+        <div class="tag">الخطوة الأولى</div>
+        <h2>من معنا في الجولة؟ 👀</h2>
+        <p>
+          أضف أسماء اللاعبين. تقدرون تلعبون بعدد أكبر من ٣ براحتكم.
+          الإمبوستر هنا <b>ما تجيه أي كلمة</b>، ويجلس يلقط من التلميحات ويحاول يخمّن وش الكلمة الأصلية.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="section-title">أسماء اللاعبين</div>
+        <div class="section-sub">أقل شيء ٣ لاعبين. تقدر تزيد قد ما تبي.</div>
+
+        <div class="player-list" id="playersContainer"></div>
+
+        <div class="row" style="margin-bottom:14px;">
+          <button class="btn btn-ghost" onclick="addPlayer()">＋ إضافة لاعب</button>
+          <button class="btn btn-red" onclick="removeLastPlayer()">－ حذف آخر لاعب</button>
+        </div>
+
+        <button class="btn btn-teal btn-full" onclick="goToSetup()">كمّل →</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-1">
+      <div class="hero">
+        <div class="tag">الخطوة الثانية</div>
+        <h2>خلّنا نضبط الجولة ⚙️</h2>
+        <p>
+          اختر الفئة وعدد الإمبوسترات. لو زودتهم تصير الجولة أشد حماس.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="mini-grid">
+          <div>
+            <label class="label">الفئة</label>
+            <select id="categorySelect" class="select"></select>
+          </div>
+          <div>
+            <label class="label">عدد الإمبوسترات</label>
+            <input id="imposterCount" class="number" type="number" min="1" value="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">طريقة اللعب</div>
+        <div class="section-sub">
+          كل اللاعبين يشوفون نفس الكلمة، إلا الإمبوستر ما يشوف شيء.
+          بعدين تتبادلون أسئلة وتلميحات قصيرة، وبعدها تصوّتون.
+        </div>
+        <div class="tiny">
+          نصيحة: لا تعطون تلميح واضح مرّة، عشان الإمبوستر ما يمسكها بسرعة 😏
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-ghost" onclick="goScreen(0)">← رجوع</button>
+        <button class="btn btn-teal" onclick="startGame()">ابدأ الجولة</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-2">
+      <div class="hero">
+        <div class="tag">الخطوة الثالثة</div>
+        <h2>وزّعوا الدور بسرية 🤫</h2>
+        <p>مرّروا الجوال لاعب لاعب. كل واحد يشوف وضعه لحاله، والباقين يبعدون عيونهم 👀</p>
+      </div>
+
+      <div class="card">
+        <div class="player-chip-grid" id="revealPlayers"></div>
+
+        <div class="center-note" id="turnNote"></div>
+
+        <div id="revealWrap" style="display:none;">
+          <div class="reveal-box" id="revealBox">
+            <div class="reveal-role" id="revealRole"></div>
+            <div class="reveal-word" id="revealWord"></div>
+            <div class="reveal-hint" id="revealHint"></div>
+          </div>
+          <button class="btn btn-ghost btn-full" id="doneRevealBtn" onclick="doneReveal()">تم ✅</button>
+        </div>
+
+        <div id="showBtnWrap">
+          <button class="btn btn-teal btn-full" onclick="showRole()">👁️ إظهار دوري</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-3">
+      <div class="hero">
+        <div class="tag">الخطوة الرابعة</div>
+        <h2>وقت الشك والتلميحات 🔍</h2>
+        <p>
+          جاوبوا على الأسئلة بتلميحات خفيفة، لا تفضحون الكلمة، ولا تكونون غامضين مرّة.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="player-chip-grid" id="questionPlayers"></div>
+        <div id="questionCard"></div>
+
+        <div class="row" style="margin-bottom:12px;">
+          <button class="btn btn-teal" onclick="nextQuestion()">🎲 سؤال جديد</button>
+          <button class="btn btn-amber" onclick="goToVote()">🗳️ نروح للتصويت</button>
+        </div>
+
+        <div class="tiny">
+          إذا حسّيتوا إن الصورة وضحت، ادخلوا على التصويت. وإذا لا، خذوا سؤالين زيادة.
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-4">
+      <div class="hero">
+        <div class="tag">الخطوة الخامسة</div>
+        <h2>صوّتوا على المشكوك فيه 🕵️</h2>
+        <p>اختاروا الشخص اللي تشوفونه أقرب واحد إنه يمثل عليكم.</p>
+      </div>
+
+      <div class="card">
+        <div class="vote-grid" id="voteGrid"></div>
+        <button class="btn btn-ghost btn-full" onclick="goScreen(3)">← رجوع للأسئلة</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-5">
+      <div class="hero">
+        <div class="tag">النتيجة</div>
+        <h2>وش صار في الجولة؟ 🎭</h2>
+        <p>هنا تعرفون إذا مسكتوا الإمبوستر… أو لعب عليكم زين 😈</p>
+      </div>
+
+      <div id="resultArea"></div>
+
+      <div class="row">
+        <button class="btn btn-green" onclick="playAgainSamePlayers()">🔁 جولة جديدة بنفس اللاعبين</button>
+        <button class="btn btn-teal" onclick="fullRestart()">🏠 من جديد</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const WORD_BANK = {
+      "عشوائي": [
+        "قهوة","شاي","بيتزا","برجر","فطيرة","جوال","تابلت","كمبيوتر","لاب توب","ساعة",
+        "منبه","سيارة","جيب","دراجة","سكوتر","طائرة","مروحية","كتاب","مجلة","قلم",
+        "ماركر","كرسي","كنبة","طاولة","مكتب","باب","شباك","مكيف","مروحة","ثلاجة",
+        "فرن","ملعقة","شوكة","سكين","قدر","مقلاة","شنطة","محفظة","نظارة","عدسة",
+        "قميص","ثوب","شماغ","غترة","حذاء","صندل","تفاحة","كمثرى","برتقال","يوسفي",
+        "موز","عنب","حليب","لبن","عصير","ماء","ملعب","صالة","بحر","نهر",
+        "جبل","هضبة","شمس","قمر","فيلم","مسلسل","كاميرا","سماعة","مايك","مصباح"
+      ],
+      "أكل ومشروبات": [
+        "قهوة","شاي","حليب","لبن","ماء","عصير","بيتزا","برجر","ساندويتش","شاورما",
+        "كبسة","مندي","مكرونة","رز","عدس","سلطة","تفاحة","كمثرى","برتقال","يوسفي",
+        "موز","عنب","تمر","كنافة","بسبوسة","كيك","آيسكريم","زبادي","جبن","خبز",
+        "فطيرة","كرواسون","سمبوسة","فلافل","حمص","شوربة","دجاج","لحم","سمك","بيض"
+      ],
+      "أشياء واستعمالات": [
+        "جوال","تابلت","كمبيوتر","لاب توب","كيبورد","ماوس","شاحن","بطارية","سماعة","مايك",
+        "كاميرا","تلفزيون","بروجكتر","مصباح","فلاش","مكيف","مروحة","ثلاجة","فرن","غسالة",
+        "ملعقة","شوكة","سكين","قدر","مقلاة","قلم","ماركر","كتاب","مجلة","ورقة",
+        "كرسي","كنبة","طاولة","مكتب","باب","شباك","مرآة","شنطة","محفظة","نظارة"
+      ],
+      "أماكن": [
+        "بيت","شقة","استراحة","مزرعة","مدرسة","جامعة","مكتبة","مستشفى","صيدلية","سوبرماركت",
+        "مطعم","كافيه","ملعب","صالة","مطار","محطة","شاطئ","بحر","نهر","جبل",
+        "هضبة","صحراء","حديقة","مول","سينما","متحف","فندق","مخيم","خيمة","كرفان"
+      ],
+      "ملابس": [
+        "قميص","ثوب","شماغ","غترة","جاكيت","معطف","بنطلون","شورت","حذاء","صندل",
+        "شراب","قبعة","نظارة","ساعة","حزام","عباية","وشاح","قفاز","بدلة","تيشيرت"
+      ]
+    };
+
+    const QUESTIONS = [
+      "وش أقرب مكان تلقاه فيه عادة؟",
+      "ينفع تستخدمه كل يوم ولا على حسب؟",
+      "لو تبي توصفه بكلمة وحدة، وش تقول؟",
+      "هل غالبًا الناس الكبار يستخدمونه أكثر أو الصغار؟",
+      "إذا انحط قدامك الحين، وش أول شيء بتسويه فيه؟",
+      "هل وجوده طبيعي في البيت؟",
+      "هل ممكن تشتريه بسرعة من مكان قريب؟",
+      "هل حجمه غالبًا صغير أو كبير؟",
+      "هل يحتاج اهتمام أو صيانة؟",
+      "هل ينفع كهدية؟",
+      "هل له أنواع كثيرة؟",
+      "هل يفرق لو كان غالي أو رخيص؟",
+      "هل تحسّه عملي أو للمتعة أكثر؟",
+      "هل يجي بأشكال وألوان متعددة؟",
+      "هل ممكن تستخدمه لحالك أو لازم مع ناس؟",
+      "هل هو شيء موسمي ولا طوال السنة؟",
+      "وش أقرب شيء يشبهه؟",
+      "هل يستخدم داخل البيت أكثر أو برا؟",
+      "لو اختفى من حياتك، بتحس فيه؟",
+      "هل تلمسه بيدك غالبًا؟",
+      "هل له ريحة أو طعم أو صوت؟",
+      "هل ينكسر بسهولة؟",
+      "هل يحتاج كهرباء أو لا؟",
+      "هل وجوده عند الناس شيء شائع؟",
+      "هل ممكن يكون في السيارة؟",
+      "إذا قلت عنه فاخر، يركب ولا لا؟",
+      "هل يجي منه نسخة صغيرة وكبيرة؟",
+      "هل تحسّه أساسي ولا كمالي؟",
+      "هل ينفع للأطفال؟",
+      "هل ينفع تاخذه معك في سفر؟"
+    ];
+
+    let G = {
+      names: [],
+      category: "عشوائي",
+      word: "",
+      imposters: [],
+      revealIndex: 0,
+      qCount: 0,
+      qPool: [],
+      votedFor: null
+    };
+
+    function rnd(n){ return Math.floor(Math.random()*n); }
+
+    function shuffle(arr){
+      const a = [...arr];
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
+    }
+
+    function uniqueWords(arr){
+      return [...new Set(arr)];
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function initPlayers(){
+      const container = document.getElementById("playersContainer");
+      container.innerHTML = "";
+      ["اللاعب ١","اللاعب ٢","اللاعب ٣","اللاعب ٤"].forEach((name, idx) => {
+        createPlayerRow(name, idx === 0 ? "أنت" : "");
+      });
+    }
+
+    function createPlayerRow(value = "", placeholder = ""){
+      const container = document.getElementById("playersContainer");
+      const index = container.children.length + 1;
+
+      const row = document.createElement("div");
+      row.className = "player-row";
+      row.innerHTML = `
+        <div class="player-no">${toArabicNum(index)}</div>
+        <input class="player-input" type="text" value="${escapeHtml(value)}" placeholder="${placeholder || `اسم اللاعب ${toArabicNum(index)}`}" />
+        <button class="icon-btn" onclick="deletePlayer(this)" title="حذف">✕</button>
+      `;
+      container.appendChild(row);
+      refreshPlayerNumbers();
+    }
+
+    function addPlayer(){
+      createPlayerRow("");
+    }
+
+    function deletePlayer(btn){
+      const container = document.getElementById("playersContainer");
+      if(container.children.length <= 3){
+        alert("لازم يبقى عندكم ٣ لاعبين على الأقل 😄");
+        return;
+      }
+      btn.closest(".player-row").remove();
+      refreshPlayerNumbers();
+    }
+
+    function removeLastPlayer(){
+      const container = document.getElementById("playersContainer");
+      if(container.children.length <= 3){
+        alert("لازم يبقى عندكم ٣ لاعبين على الأقل 😄");
+        return;
+      }
+      container.lastElementChild.remove();
+      refreshPlayerNumbers();
+    }
+
+    function refreshPlayerNumbers(){
+      const rows = [...document.querySelectorAll("#playersContainer .player-row")];
+      rows.forEach((row, i) => {
+        const no = row.querySelector(".player-no");
+        const input = row.querySelector(".player-input");
+        no.textContent = toArabicNum(i + 1);
+        if(!input.placeholder || input.placeholder.startsWith("اسم اللاعب")){
+          input.placeholder = `اسم اللاعب ${toArabicNum(i + 1)}`;
+        }
+      });
+    }
+
+    function getNames(){
+      const inputs = [...document.querySelectorAll("#playersContainer .player-input")];
+      const names = inputs.map((inp, i) => inp.value.trim() || `اللاعب ${toArabicNum(i+1)}`);
+      return names;
+    }
+
+    function goScreen(n){
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(`screen-${n}`).classList.add("active");
+
+      document.querySelectorAll(".step").forEach((step, i) => {
+        step.classList.remove("active","done");
+        if(i < n) step.classList.add("done");
+        else if(i === n) step.classList.add("active");
+      });
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function goToSetup(){
+      const names = getNames();
+      if(names.length < 3){
+        alert("لازم على الأقل ٣ لاعبين");
+        return;
+      }
+
+      const categorySelect = document.getElementById("categorySelect");
+      if(!categorySelect.options.length){
+        buildCategoryOptions();
+      }
+
+      const impInput = document.getElementById("imposterCount");
+      impInput.max = Math.max(1, names.length - 1);
+
+      goScreen(1);
+    }
+
+    function buildCategoryOptions(){
+      const select = document.getElementById("categorySelect");
+      select.innerHTML = Object.keys(WORD_BANK).map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join("");
+    }
+
+    function pickWord(category){
+      const pool = uniqueWords(WORD_BANK[category] || WORD_BANK["عشوائي"]);
+      return pool[rnd(pool.length)];
+    }
+
+    function pickImposters(playerCount, impCount){
+      const indices = shuffle([...Array(playerCount).keys()]);
+      return indices.slice(0, impCount);
+    }
+
+    function startGame(){
+      const names = getNames();
+      const category = document.getElementById("categorySelect").value || "عشوائي";
+      const word = pickWord(category);
+
+      let impCount = parseInt(document.getElementById("imposterCount").value, 10);
+      if(Number.isNaN(impCount) || impCount < 1) impCount = 1;
+      impCount = Math.min(impCount, names.length - 1);
+
+      G = {
+        names,
+        category,
+        word,
+        imposters: pickImposters(names.length, impCount),
+        revealIndex: 0,
+        qCount: 0,
+        qPool: shuffle([...QUESTIONS]),
+        votedFor: null
+      };
+
+      buildRevealPlayers();
+      setRevealTurn();
+      goScreen(2);
+    }
+
+    function buildRevealPlayers(){
+      const el = document.getElementById("revealPlayers");
+      el.innerHTML = G.names.map((name, i) => `
+        <div class="chip ${i===0 ? 'current' : ''}" id="rv-${i}">
+          <div class="name">${escapeHtml(name)}</div>
+          <div class="badge" id="rvb-${i}">${i===0 ? 'دوره الحين' : 'بانتظار دوره'}</div>
+        </div>
+      `).join("");
+    }
+
+    function setRevealTurn(){
+      const i = G.revealIndex;
+      G.names.forEach((_, j) => {
+        const chip = document.getElementById(`rv-${j}`);
+        const badge = document.getElementById(`rvb-${j}`);
+        if(!chip || !badge) return;
+        chip.classList.remove("current","done");
+        if(j < i){
+          chip.classList.add("done");
+          badge.textContent = "خلص ✓";
+        }else if(j === i){
+          chip.classList.add("current");
+          badge.textContent = "دوره الحين";
+        }else{
+          badge.textContent = "بانتظار دوره";
+        }
+      });
+
+      document.getElementById("turnNote").innerHTML = `
+        عطوا الجوال لـ <b>${escapeHtml(G.names[i])}</b><br>
+        واضغطوا إظهار دوري، والباقين لا يطالعون الشاشة 👀
+      `;
+
+      document.getElementById("revealWrap").style.display = "none";
+      document.getElementById("showBtnWrap").style.display = "block";
+    }
+
+    function showRole(){
+      const i = G.revealIndex;
+      const isImposter = G.imposters.includes(i);
+
+      const box = document.getElementById("revealBox");
+      const role = document.getElementById("revealRole");
+      const word = document.getElementById("revealWord");
+      const hint = document.getElementById("revealHint");
+      const doneBtn = document.getElementById("doneRevealBtn");
+
+      if(isImposter){
+        box.className = "reveal-box imposter";
+        role.innerHTML = "🚨 أنت الإمبوستر";
+        word.textContent = "ما عندك كلمة";
+        hint.innerHTML = `
+          خلك طبيعي، واسمع تلميحاتهم زين.<br>
+          حاول تمشي معهم، وبالأخير خمّن الكلمة الأصلية 😏
+        `;
+      }else{
+        box.className = "reveal-box";
+        role.innerHTML = "✅ أنت لاعب عادي";
+        word.textContent = G.word;
+        hint.innerHTML = `
+          احفظ الكلمة زين، ولا تعطِ تلميح يفضحها بسرعة.
+        `;
+      }
+
+      if(i === G.names.length - 1){
+        doneBtn.textContent = "تم ✅ نبدأ الأسئلة";
+      }else{
+        doneBtn.textContent = `تم ✅ عط الجوال لـ ${G.names[i+1]}`;
+      }
+
+      document.getElementById("showBtnWrap").style.display = "none";
+      document.getElementById("revealWrap").style.display = "block";
+    }
+
+    function doneReveal(){
+      if(G.revealIndex < G.names.length - 1){
+        G.revealIndex++;
+        setRevealTurn();
+      }else{
+        buildQuestionPlayers();
+        nextQuestion();
+        goScreen(3);
+      }
+    }
+
+    function buildQuestionPlayers(activeIndex = -1){
+      const el = document.getElementById("questionPlayers");
+      el.innerHTML = G.names.map((name, i) => `
+        <div class="chip ${i===activeIndex ? 'current' : ''}">
+          <div class="name">${escapeHtml(name)}</div>
+          <div class="badge">لاعب</div>
+        </div>
+      `).join("");
+    }
+
+    function nextQuestion(){
+      G.qCount++;
+
+      if(!G.qPool.length){
+        G.qPool = shuffle([...QUESTIONS]);
+      }
+
+      const q = G.qPool.shift();
+      let from = rnd(G.names.length);
+      let to = rnd(G.names.length);
+      while(to === from){
+        to = rnd(G.names.length);
+      }
+
+      buildQuestionPlayers(from);
+
+      document.getElementById("questionCard").innerHTML = `
+        <div class="q-card">
+          <div class="q-top">
+            <div class="q-count">سؤال رقم ${toArabicNum(G.qCount)}</div>
+            <div class="q-players">
+              <span style="color:var(--teal)">${escapeHtml(G.names[from])}</span>
+              &nbsp;← يسأل ←&nbsp;
+              <span style="color:var(--amber)">${escapeHtml(G.names[to])}</span>
+            </div>
+          </div>
+          <div class="q-text">${escapeHtml(q)}</div>
+          <div class="q-hint">
+            جاوبوا بتلميح ذكي... لا تصيرون واضحين مرّة، ولا مبهمين مرّة.
+          </div>
+        </div>
+      `;
+    }
+
+    function goToVote(){
+      buildVoteGrid();
+      goScreen(4);
+    }
+
+    function buildVoteGrid(){
+      document.getElementById("voteGrid").innerHTML = G.names.map((name, i) => `
+        <div class="vote-card" onclick="castVote(${i})">
+          <div class="emoji">🕵️</div>
+          <div class="name">${escapeHtml(name)}</div>
+          <div class="hint">اضغط للتصويت</div>
+        </div>
+      `).join("");
+    }
+
+    function castVote(idx){
+      G.votedFor = idx;
+      buildResult();
+      goScreen(5);
+    }
+
+    function buildResult(){
+      const votedName = G.names[G.votedFor];
+      const impNames = G.imposters.map(i => G.names[i]);
+      const caught = G.imposters.includes(G.votedFor);
+
+      const resultHtml = `
+        <div class="result ${caught ? 'good' : 'bad'}">
+          <span class="emoji">${caught ? '🎯' : '😈'}</span>
+          <h3>${caught ? 'صاديتوا واحد من الإمبوسترات!' : 'لااا… التصويت راح على شخص بريء'}</h3>
+          <p>
+            صوتّوا على: <b>${escapeHtml(votedName)}</b><br>
+            الإمبوستر${impNames.length > 1 ? 'ات' : ''}: <b>${escapeHtml(impNames.join(' ، '))}</b>
+          </p>
+        </div>
+
+        <div class="info">
+          <div class="info-item">
+            <div class="k">الفئة</div>
+            <div class="v">${escapeHtml(G.category)}</div>
+          </div>
+          <div class="info-item">
+            <div class="k">الكلمة الأصلية</div>
+            <div class="v" style="color:var(--teal)">${escapeHtml(G.word)}</div>
+          </div>
+          <div class="info-item">
+            <div class="k">عدد الإمبوسترات</div>
+            <div class="v">${toArabicNum(G.imposters.length)}</div>
+          </div>
+          <div class="info-item">
+            <div class="k">عدد الأسئلة</div>
+            <div class="v">${toArabicNum(G.qCount)}</div>
+          </div>
+        </div>
+
+        <div class="final-box">
+          <span class="emoji">🎤</span>
+          <h4>الحين دور الإمبوستر</h4>
+          <p>
+            خلّوا <b>${escapeHtml(impNames.join(' ، '))}</b> يقول كيف حاول يمشي معكم،
+            وش كان يتوقع الكلمة تكون، وهل كان قريب أو لا 😄
+          </p>
+        </div>
+      `;
+
+      document.getElementById("resultArea").innerHTML = resultHtml;
+    }
+
+    function playAgainSamePlayers(){
+      const names = [...G.names];
+      document.getElementById("playersContainer").innerHTML = "";
+      names.forEach(n => createPlayerRow(n));
+      goToSetup();
+    }
+
+    function fullRestart(){
+      G = {
+        names: [],
+        category: "عشوائي",
+        word: "",
+        imposters: [],
+        revealIndex: 0,
+        qCount: 0,
+        qPool: [],
+        votedFor: null
+      };
+      initPlayers();
+      goScreen(0);
+    }
+
+    function toArabicNum(n){
+      const map = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+      return String(n).replace(/\d/g, d => map[d]);
+    }
+
+    buildCategoryOptions();
+    initPlayers();
+  </script>
+</body>
+</html>
