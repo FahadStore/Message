@@ -599,7 +599,7 @@ document.getElementById(“rvBoxWrap”).style.display=“none”;document.getEl
 function showRole(){
 const i=G.ri,isImp=G.imposters.includes(i),box=document.getElementById(“rvBox”),role=document.getElementById(“rvRole”),word=document.getElementById(“rvWord”),hint=document.getElementById(“rvHint”),doneBtn=document.getElementById(“doneBtn”),impAct=document.getElementById(“impActionsWrap”),choices=document.getElementById(“impChoices”);
 impAct.querySelectorAll(”.temp-msg”).forEach(el=>el.remove());choices.style.display=“grid”;
-if(isImp){box.className=“reveal-box imposter-box”;role.innerHTML=“🚨”;word.textContent=“😈 انت الامبوستر”;hint.innerHTML=“استمع للتلميحات وحاول تمشي معهم طبيعي”;impAct.style.display=“block”;doneBtn.textContent=i<G.names.length-1?`تم ✅ عط الجوال لـ ${esc(G.names[i+1])}`:“تم ✅ نبدا النقاش”}
+if(isImp){box.className=“reveal-box imposter-box”;role.innerHTML=“🚨 انت الامبوستر”;word.textContent=“😈 خبّي دورك”;hint.innerHTML=“استمع للتلميحات وحاول تمشي معهم طبيعي”;impAct.style.display=“block”;doneBtn.textContent=i<G.names.length-1?`تم ✅ عط الجوال لـ ${esc(G.names[i+1])}`:“تم ✅ نبدا النقاش”}
 else{box.className=“reveal-box normal”;role.innerHTML=“✅ لاعب عادي”;word.textContent=G.word;hint.innerHTML=“احفظ الكلمه واعط تلميحات ذكيه بدون ما تفضحها 🤫”;impAct.style.display=“none”;doneBtn.textContent=i<G.names.length-1?`تم ✅ عط الجوال لـ ${esc(G.names[i+1])}`:“تم ✅ نبدا النقاش”}
 document.getElementById(“showWrap”).style.display=“none”;document.getElementById(“rvBoxWrap”).style.display=“block”;
 }
@@ -700,7 +700,7 @@ function buildResult(){
 const votedName=G.names[G.voted],impNames=G.imposters.map(i=>G.names[i]),caught=G.imposters.includes(G.voted);
 if(caught)launchConfetti();
 let title,emoji,klass;
-if(caught){if(G.caughtGuessCorrect){title=“انصادوا… بس خطفوا الفوز!”;emoji=“🔥”;klass=“lose”}else{title=“قفطتو الامبوستر!”;emoji=“🎯”;klass=“win”}}
+if(caught){if(G.caughtGuessCorrect){title=“انصادوا… بس خطفوا الفوز!”;emoji=“🔥”;klass=“lose”}else{title=“صديتوا الامبوستر!”;emoji=“🎯”;klass=“win”}}
 else{title=“الامبوستر لعبها عليكم 😈”;emoji=“😈”;klass=“lose”}
 
 let html=`<div class="result-box ${klass}"><span class="result-emoji">${emoji}</span><div class="result-title">${title}</div><div class="result-desc">صوتوا على: <b>${esc(votedName)}</b><br>الامبوستر${impNames.length>1?'ات':''}: <b>${esc(impNames.join(' ، '))}</b></div></div>`;
