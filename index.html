@@ -688,7 +688,7 @@ function buildResult(){
   const votedName=G.names[G.voted],impNames=G.imposters.map(i=>G.names[i]),caught=G.imposters.includes(G.voted);
   if(caught)launchConfetti();
   let title,emoji,klass;
-  if(caught){if(G.caughtGuessCorrect){title="انصادوا... بس خطفوا الفوز!";emoji="🔥";klass="lose"}else{title="صديتوا الامبوستر!";emoji="🎯";klass="win"}}
+  if(caught){if(G.caughtGuessCorrect){title="انصادوا... بس خطفوا الفوز!";emoji="🔥";klass="lose"}else{title="الامبوستر فشل 🥇";emoji="🎯";klass="win"}}
   else{title="الامبوستر لعبها عليكم 😈";emoji="😈";klass="lose"}
 
   let html=`<div class="result-box ${klass}"><span class="result-emoji">${emoji}</span><div class="result-title">${title}</div><div class="result-desc">صوتوا على: <b>${esc(votedName)}</b><br>الامبوستر${impNames.length>1?'ات':''}: <b>${esc(impNames.join(' ، '))}</b></div></div>`;
